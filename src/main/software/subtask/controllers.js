@@ -3,10 +3,7 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function getAllSubTask(req, res) {
-  const { taskId } = req.params;
-  const Subtasks = await prisma.Subtask.findMany({
-    where: { taskId: Number(taskId) },
-  });
+  const Subtasks = await prisma.Subtask.findMany();
   return res.json({ Subtasks });
 }
 
@@ -16,7 +13,7 @@ export async function createSubTask(req, res) {
     const newSubtask = await prisma.Subtask.create({
       data: {
         name,
-        taskId,
+        taskId: Number(taskId),
       },
     });
     return res.json({ newSubtask });
