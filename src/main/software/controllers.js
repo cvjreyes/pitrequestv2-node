@@ -7,24 +7,19 @@ export async function getAll(req, res) {
   return res.json({ Softwares });
 }
 
-// export async function getSoftware(req, res) {
-//   const { id } = req.params;
-
-//   const Software = await prisma.Software.findUnique({
-//     where: {
-//       id: Number(id),
-//     },
-//     include: {
-//       Task: {
-//         include: {
-//           Subtask: true,
-//         },
-//       },
-//     },
-//   });
-
-//   res.json(Software);
-// }
+export async function getSoftwareTree(req, res) {
+  const SoftwareTree = await prisma.Software.findMany({
+    include: {
+      Task: {
+        include: {
+          Subtask: true,
+        },
+      },
+    },
+  });
+  console.log(SoftwareTree);
+  res.json(SoftwareTree);
+}
 
 export async function createSoftware(req, res) {
   const { name, code, adminId } = req.body;
