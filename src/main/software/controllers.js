@@ -28,12 +28,13 @@ export async function getSoftware(req, res) {
 
 export async function createSoftware(req, res) {
   const { name, code, adminId } = req.body;
+  console.log(name, code, adminId);
   try {
     const newSoftware = await prisma.Software.create({
       data: {
         name,
         code,
-        adminId,
+        adminId: Number(adminId),
       },
     });
     return res.json({ newSoftware });
