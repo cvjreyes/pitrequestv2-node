@@ -21,25 +21,15 @@ export async function getSoftwareTree(req, res) {
 }
 
 export async function createSoftware(req, res) {
-  const { name, code, adminId } = req.body;
-  let newSoftware;
+  const { name, code } = req.body;
   try {
-    if (adminId) {
-      newSoftware = await prisma.Software.create({
-        data: {
-          name,
-          code,
-          adminId: Number(adminId),
-        },
-      });
-    } else {
-      newSoftware = await prisma.Software.create({
+      const newSoftware = await prisma.Software.create({
         data: {
           name,
           code,
         },
       });
-    }
+    
     return res.json({ newSoftware });
   } catch (err) {
     console.log(err);
