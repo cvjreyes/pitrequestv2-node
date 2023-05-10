@@ -17,20 +17,29 @@ export async function getSoftwareTree(req, res) {
       },
     },
   });
-  console.log(SoftwareTree);
   res.json(SoftwareTree);
 }
 
 export async function createSoftware(req, res) {
   const { name, code, adminId } = req.body;
+  let newSoftware;
   try {
-    const newSoftware = await prisma.Software.create({
-      data: {
-        name,
-        code,
-        adminId: Number(adminId),
-      },
-    });
+    if (adminId) {
+      newSoftware = await prisma.Software.create({
+        data: {
+          name,
+          code,
+          adminId: Number(adminId),
+        },
+      });
+    } else {
+      newSoftware = await prisma.Software.create({
+        data: {
+          name,
+          code,
+        },
+      });
+    }
     return res.json({ newSoftware });
   } catch (err) {
     console.log(err);
