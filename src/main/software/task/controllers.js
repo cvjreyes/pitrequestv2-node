@@ -2,11 +2,6 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function getAllTasks(req, res) {
-  const Tasks = await prisma.Task.findMany();
-  return res.json({ Tasks });
-}
-
 export async function createTask(req, res) {
   const { name, softwareId } = req.body;
   try {
@@ -22,5 +17,21 @@ export async function createTask(req, res) {
     return res
       .status(500)
       .json({ error: "An error occurred while creating the Task" });
+  }
+}
+
+export async function deleteTask(req, res) {
+  const { id } = req.params;
+  try {
+    const deleteTask = await prisma.Task.delete({
+      where: { id: Number(id) },
+    });
+
+    return res.json({ deleteTask });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while deleting the Task" });
   }
 }
