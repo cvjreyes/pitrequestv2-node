@@ -6,8 +6,8 @@ import { PrismaClient } from "@prisma/client";
 dotenv.config();
 const prisma = new PrismaClient();
 
-export function generateToken(email) {
-  const token = Jwt.sign({ email }, process.env.NODE_TOKEN_SECRET, {
+export function generateToken(email, roles) {
+  const token = Jwt.sign({ email, roles }, process.env.NODE_TOKEN_SECRET, {
     expiresIn: "7d",
   });
 

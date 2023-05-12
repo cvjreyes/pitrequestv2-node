@@ -7,6 +7,9 @@ export async function getAll(req, res) {
     select: {
       name: true,
     },
+    include:{
+      roles: true
+    }
   });
   return res.json({ roles });
 }

@@ -9,7 +9,7 @@ import {
 } from "../../helpers/token.js";
 import { getName } from "../../helpers/usersname.js";
 import { sendEmail } from "../outlook/emails.js";
-import { getUser, getUserById } from "../user/services.js";
+import { getUserWithRoles, getUserById } from "../user/controllers.js";
 
 export async function signin(req, res) {
   const { email } = req.body;
@@ -17,16 +17,20 @@ export async function signin(req, res) {
     if (!email) return res.status(404).json("Please, fill all fields");
     const validatedEmail = validator.validate(email);
     if (!validatedEmail) return res.status(401).json("Invalid credentials");
-    let user = await getUser(email);
+    let user = await getUserWithRoles(email);
     if (!user) {
       const regex = /technipenergies.com$/;
       if (!regex.exec(email))
         return res
           .status(401)
           .json("Your email must belong to Technip Energies");
-      const token = generateToken(email);
+      const token = generateToken(email, user.roles);
       const name = getName(email);
-      const ok = await createUserWithToken({ name: name, email: email, token: token });
+      const ok = await createUserWithToken({
+        name: name,
+        email: email,
+        token: token,
+      });
       if (ok) {
         return res.json(`Email ${email} registered successfully`);
       } else throw new Error("Sending email failed");
@@ -46,10 +50,11 @@ export async function login(req, res) {
 
   try {
     if (!email) return res.status(404).json("Please, fill all fields");
-    
-    const user = await getUser(email);
+
+    const user = await getUserWithRoles(email);
+    console.log(user);
     if (user) {
-      const token = generateToken(email);
+      const token = generateToken(email, user.roles);
       await saveTokenIntoDB({ email: email, token: token });
       const link = generateLink({ page: "log_in", id: user.id, token: token });
       const ok = await sendEmail({
@@ -94,7 +99,7 @@ export async function getUserInfo(req, res) {
   const { email } = req;
   try {
     if (!email) return res.status(401).json("Invalid token 1");
-    const user = await getUser(email);
+    const user = await getUserWithRoles(email);
     if (!user) return res.status(401).json("Invalid token 2");
     return res.json({ user });
   } catch (err) {
