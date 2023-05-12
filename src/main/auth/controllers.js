@@ -52,7 +52,6 @@ export async function login(req, res) {
     if (!email) return res.status(404).json("Please, fill all fields");
 
     const user = await getUserWithRoles(email);
-    console.log(user);
     if (user) {
       const token = generateToken(email, user.roles);
       await saveTokenIntoDB({ email: email, token: token });
