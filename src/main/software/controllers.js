@@ -2,6 +2,11 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+export async function getAllSoftware(req, res) {
+  const getSoftwares = await prisma.Software.findMany();
+  res.json(getSoftwares);
+}
+
 export async function getSoftwareTree(req, res) {
   const SoftwareTree = await prisma.Software.findMany({
     include: {
@@ -37,7 +42,6 @@ export async function createSoftware(req, res) {
 export async function deleteSoftware(req, res) {
   const { id } = req.params;
   try {
-    
     const deleteSoftware = await prisma.Software.delete({
       where: { id: Number(id) },
     });

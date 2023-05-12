@@ -54,7 +54,7 @@ export async function login(req, res) {
       const link = generateLink({ page: "log_in", id: user.id, token: token });
       const ok = await sendEmail({
         email: email,
-        subject: "IdeasPanel: Log In",
+        subject: "PitRequest: Log In",
         template: "login",
         link: link,
       });

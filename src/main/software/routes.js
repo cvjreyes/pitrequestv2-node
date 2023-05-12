@@ -1,10 +1,16 @@
 import express from "express";
-import { createSoftware, deleteSoftware, getSoftwareTree } from "./controllers.js";
+import {
+  createSoftware,
+  deleteSoftware,
+  getAllSoftware,
+  getSoftwareTree,
+} from "./controllers.js";
 import { createTask, deleteTask } from "./task/controllers.js";
 import { createSubTask, deleteSubtask } from "./subtask/controllers.js";
 
 const router = express.Router();
 
+router.get("/get_all", getAllSoftware);
 router.get("/get_tree", getSoftwareTree);
 
 router.post("/create", createSoftware);
