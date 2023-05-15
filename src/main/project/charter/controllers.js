@@ -20,3 +20,19 @@ export async function createCharter(req, res) {
       .json({ error: "An error occurred while creating the Charter" });
   }
 }
+
+export async function deleteCharter(req, res) {
+  const { id } = req.params;
+  try {
+    const deleteCharter = await prisma.Charter.delete({
+      where: { id: Number(id) },
+    });
+
+    return res.json({ deleteCharter });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while deleting the Charter" });
+  }
+}

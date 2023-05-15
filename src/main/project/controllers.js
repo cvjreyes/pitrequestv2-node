@@ -6,17 +6,6 @@ export async function getProjectTree(req, res) {
   const ProjectTree = await prisma.Project.findMany({
     include: {
       Charter: true,
-      ProjectUsers: {
-        select: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-        },
-      },
       ProjectSoftwares: {
         select: {
           user: {
@@ -144,5 +133,21 @@ export async function addSoftwareAdminProject(req, res) {
     return res.status(500).json({
       error: "An error occurred while adding Software to the Project",
     });
+  }
+}
+
+export async function deleteProject(req, res) {
+  const { id } = req.params;
+  try {
+    const deleteProject = await prisma.Project.delete({
+      where: { id: Number(id) },
+    });
+
+    return res.json({ deleteProject });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while deleting the Project" });
   }
 }
