@@ -67,6 +67,19 @@ export async function getProjectTree(req, res) {
   res.json(groupedProjectSoftwares);
 }
 
+export async function getAdminSoftwareProject(req, res) {
+  const { adminId, softwareId, projectId } = req.params;
+  const getAdminSoftwares = await prisma.ProjectSoftwares.findMany({
+    where: {
+      adminId: Number(adminId),
+      softwareId: Number(softwareId),
+      projectId: Number(projectId),
+    },
+    select: { id: true },
+  });
+  res.json(getAdminSoftwares);
+}
+
 export async function createProject(req, res) {
   const { name, code, estimatedHours } = req.body;
   try {
@@ -144,6 +157,22 @@ export async function deleteProject(req, res) {
     });
 
     return res.json({ deleteProject });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while deleting the Project" });
+  }
+}
+
+export async function removeAdminSoftware(req, res) {
+  const { id } = req.params;
+  try {
+    const removeAdminSoftware = await prisma.ProjectSoftwares.delete({
+      where: { id: Number(id) },
+    });
+
+    return res.json({ removeAdminSoftware });
   } catch (err) {
     console.log(err);
     return res
