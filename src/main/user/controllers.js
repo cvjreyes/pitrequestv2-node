@@ -7,6 +7,42 @@ export async function getAll(req, res) {
   return res.json({ Users });
 }
 
+export async function getUnassignedAdmins(req, res) {
+  try {
+    const { projectId, softwareId } = req.params;
+
+    const admins = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      where: {
+        UsersRol: {
+          some: {
+            rol: {
+              name: "ADMINTOOL",
+            },
+          },
+        },
+        NOT: {
+          ProjectSoftwares: {
+            some: {
+              projectId: parseInt(projectId),
+              softwareId: parseInt(softwareId),
+            },
+          },
+        },
+      },
+    });
+
+    return res.json({ admins });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
 export async function getUsersAdmins(req, res) {
   try {
     const Admins = await prisma.User.findMany({
