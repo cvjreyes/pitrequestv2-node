@@ -4,6 +4,7 @@ import {
   deleteSoftware,
   getAllSoftware,
   getSoftwareTree,
+  getUnselectedSoftware,
 } from "./controllers.js";
 import { createTask, deleteTask } from "./task/controllers.js";
 import { createSubTask, deleteSubtask } from "./subtask/controllers.js";
@@ -11,6 +12,7 @@ import { createSubTask, deleteSubtask } from "./subtask/controllers.js";
 const router = express.Router();
 
 router.get("/get_all", getAllSoftware);
+router.get("/get_unselected_softwares/:projectId", getUnselectedSoftware);
 router.get("/get_tree", getSoftwareTree);
 
 router.post("/create", createSoftware);

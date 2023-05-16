@@ -7,6 +7,32 @@ export async function getAll(req, res) {
   return res.json({ Users });
 }
 
+export async function getUsersAdmins(req, res) {
+  try {
+    const Admins = await prisma.User.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      where: {
+        UsersRol: {
+          some: {
+            rol: {
+              name: "ADMINTOOL",
+            },
+          },
+        },
+      },
+    });
+
+    return res.json({ Admins });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
 export async function getUserWithRoles(email) {
   const user = await prisma.User.findUnique({
     where: { email },
