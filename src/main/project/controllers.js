@@ -69,11 +69,25 @@ export async function getProjectTree(req, res) {
 
 export async function getAdminSoftwareProject(req, res) {
   const { adminId, softwareId, projectId } = req.params;
+
+  let pId = 0;
+  let sId = 0;
+  let aId = 0;
+
+  if (projectId && !isNaN(parseInt(projectId))) {
+    pId = parseInt(projectId);
+  }
+  if (softwareId && !isNaN(parseInt(softwareId))) {
+    sId = parseInt(softwareId);
+  }
+  if (adminId && !isNaN(parseInt(adminId))) {
+    aId = parseInt(adminId);
+  }
   const getAdminSoftwares = await prisma.ProjectSoftwares.findMany({
     where: {
-      adminId: Number(adminId),
-      softwareId: Number(softwareId),
-      projectId: Number(projectId),
+      adminId: aId,
+      softwareId: sId,
+      projectId: pId,
     },
     select: { id: true },
   });

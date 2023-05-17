@@ -11,6 +11,16 @@ export async function getUnassignedAdmins(req, res) {
   try {
     const { projectId, softwareId } = req.params;
 
+    let pId = 0;
+    let sId = 0;
+
+    if (projectId && !isNaN(parseInt(projectId))) {
+      pId = parseInt(projectId);
+    }
+    if (softwareId && !isNaN(parseInt(softwareId))) {
+      sId = parseInt(softwareId);
+    }
+
     const admins = await prisma.user.findMany({
       select: {
         id: true,
@@ -28,8 +38,8 @@ export async function getUnassignedAdmins(req, res) {
         NOT: {
           ProjectSoftwares: {
             some: {
-              projectId: parseInt(projectId),
-              softwareId: parseInt(softwareId),
+              projectId: pId,
+              softwareId: sId,
             },
           },
         },
