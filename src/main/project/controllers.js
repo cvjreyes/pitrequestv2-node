@@ -136,23 +136,13 @@ export async function addUserProject(req, res) {
 export async function addSoftwareAdminProject(req, res) {
   const { projectId, adminId, softwareId } = req.body;
   try {
-    let newSoftwareProject;
-    if (adminId) {
-      newSoftwareProject = await prisma.ProjectSoftwares.create({
-        data: {
-          projectId: Number(projectId),
-          adminId: Number(adminId),
-          softwareId: Number(softwareId),
-        },
-      });
-    } else {
-      newSoftwareProject = await prisma.ProjectSoftwares.create({
-        data: {
-          projectId: Number(projectId),
-          softwareId: Number(softwareId),
-        },
-      });
-    }
+    const newSoftwareProject = await prisma.ProjectSoftwares.create({
+      data: {
+        projectId: Number(projectId),
+        adminId: Number(adminId),
+        softwareId: Number(softwareId),
+      },
+    });
 
     return res.json({ newSoftwareProject });
   } catch (err) {

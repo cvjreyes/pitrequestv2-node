@@ -8,12 +8,12 @@ export async function getAllSoftware(req, res) {
 }
 
 export async function getUnselectedSoftware(req, res) {
-  const projectId = req.params;
+  const { projectId } = req.params;
 
-  let pId = 0
+  let pId = 0;
 
   if (projectId && !isNaN(parseInt(projectId))) {
-    pId = parseInt(projectId)
+    pId = parseInt(projectId);
   }
   // Obtener los IDs de los softwares seleccionados en el proyecto
   const selectedSoftwareIds = await prisma.ProjectSoftwares.findMany({
