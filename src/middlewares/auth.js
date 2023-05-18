@@ -10,6 +10,7 @@ export async function checkAuth(req, res, next) {
   Jwt.verify(verifyToken, process.env.NODE_TOKEN_SECRET, (err, user) => {
     if (err) return send(res, false, "Invalid token");
     req.email = user.email;
+    req.roles = user.roles;
     next();
   });
 }

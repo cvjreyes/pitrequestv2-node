@@ -2,18 +2,37 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function getAll(req, res) {
-  const Softwares = await prisma.Software.findMany();
-  return res.json({ Softwares });
+export async function getAllSoftware(req, res) {
+  const getSoftwares = await prisma.Software.findMany();
+  res.json(getSoftwares);
 }
 
-export async function getSoftware(req, res) {
-  const { id } = req.params;
+export async function getUnselectedSoftware(req, res) {
+  const { projectId } = req.params;
 
-  const Software = await prisma.Software.findUnique({
+  let pId = 0;
+
+  if (projectId && !isNaN(parseInt(projectId))) {
+    pId = parseInt(projectId);
+  }
+  // Obtener los IDs de los softwares seleccionados en el proyecto
+  const selectedSoftwareIds = await prisma.ProjectSoftwares.findMany({
+    where: { projectId: pId },
+    select: { softwareId: true },
+  });
+
+  // Obtener todos los softwares que no están seleccionados en el proyecto
+  const unselectedSoftwares = await prisma.Software.findMany({
     where: {
-      id: Number(id),
+      NOT: { id: { in: selectedSoftwareIds.map((item) => item.softwareId) } },
     },
+  });
+
+  res.json(unselectedSoftwares);
+}
+
+export async function getSoftwareTree(req, res) {
+  const SoftwareTree = await prisma.Software.findMany({
     include: {
       Task: {
         include: {
@@ -22,25 +41,40 @@ export async function getSoftware(req, res) {
       },
     },
   });
-
-  res.json(Software);
+  res.json(SoftwareTree);
 }
 
 export async function createSoftware(req, res) {
-  const { name, code, adminId } = req.body;
+  const { name, code } = req.body;
   try {
     const newSoftware = await prisma.Software.create({
       data: {
         name,
         code,
-        adminId,
       },
     });
+
     return res.json({ newSoftware });
   } catch (err) {
     console.log(err);
     return res
       .status(500)
       .json({ error: "An error occurred while creating the Software" });
+  }
+}
+
+export async function deleteSoftware(req, res) {
+  const { id } = req.params;
+  try {
+    const deleteSoftware = await prisma.Software.delete({
+      where: { id: Number(id) },
+    });
+
+    return res.json({ deleteSoftware });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while deleting the Software" });
   }
 }

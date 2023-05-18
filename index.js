@@ -5,6 +5,7 @@ import authRouter from "./src/main/auth/routes.js";
 import roleRouter from "./src/main/role/routes.js";
 import userRouter from "./src/main/user/routes.js";
 import softwareRouter from "./src/main/software/routes.js";
+import projectRouter from "./src/main/project/routes.js";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.use("/user", userRouter);
 
 app.use("/role", roleRouter);
 app.use("/software", softwareRouter);
+app.use("/project", projectRouter);
 
 // 404 HANDLING
 app.use("*", (req, res) => {
