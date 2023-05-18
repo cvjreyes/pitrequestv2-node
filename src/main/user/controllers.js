@@ -114,5 +114,5 @@ export async function getUserById(id) {
 
   const roles = userRoles.map((userRol) => userRol.rol.name);
 
-  return { ...user, roles };
+  return { ...getUserByID, roles };
 }
