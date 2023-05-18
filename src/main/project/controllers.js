@@ -95,13 +95,14 @@ export async function getAdminSoftwareProject(req, res) {
 }
 
 export async function createProject(req, res) {
-  const { name, code, estimatedHours } = req.body;
+  const { name, code, estimatedHours, userProjectId } = req.body;
   try {
     const newProject = await prisma.Project.create({
       data: {
         name,
         code,
         estimatedHours: parseFloat(estimatedHours),
+        userProjectId,
       },
     });
 
