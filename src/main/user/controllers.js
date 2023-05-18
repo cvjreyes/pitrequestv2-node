@@ -102,5 +102,17 @@ export async function getUserById(id) {
   const getUserByID = await prisma.User.findUnique({
     where: { id },
   });
-  return getUserByID;
+
+  if (!getUserByID) {
+    return null;
+  }
+
+  const userRoles = await prisma.UsersRol.findMany({
+    where: { userId: id },
+    include: { rol: true },
+  });
+
+  const roles = userRoles.map((userRol) => userRol.rol.name);
+
+  return { ...user, roles };
 }
