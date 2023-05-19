@@ -24,7 +24,7 @@ export async function signin(req, res) {
         return res
           .status(401)
           .json("Your email must belong to Technip Energies");
-      const token = generateToken(email, user.roles);
+      const token = generateToken(email, "USER");
       const name = getName(email);
       const ok = await createUserWithToken({
         name: name,
