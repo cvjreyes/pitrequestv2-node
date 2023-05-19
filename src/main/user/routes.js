@@ -1,10 +1,16 @@
 import express from "express";
-import { getAll, getUnassignedAdmins, getUsersAdmins } from "./controllers.js";
+import { getAll, getRolesFromUser, getAdmins } from "./controllers.js";
+import { addRoleToUser } from "../role/controllers.js";
 
 const router = express.Router();
 
-router.get("/get_all", getAll);
-router.get("/get_admins", getUsersAdmins);
-router.get("/get_unassigned_admins/:projectId/:softwareId", getUnassignedAdmins);
+router.get("/", getAll);
+router.get("/:id/roles", getRolesFromUser);
+router.get("/admins", getAdmins);
+
+router.post("/:id/roles", addRoleToUser);
 
 export default router;
+
+
+

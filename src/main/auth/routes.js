@@ -9,10 +9,10 @@ import { checkAuth } from "../../middlewares/auth.js";
 
 const router = express.Router();
 
-router.get("/get_user_info", checkAuth, getUserInfo);
+router.get("/user", checkAuth, getUserInfo);
 
 router.post("/signin", signin);
-router.post("/validate_credentials", validateCredentials);
+router.post("/validate-credentials", validateCredentials);
 
 router.put("/login", login);
 

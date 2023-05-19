@@ -67,7 +67,7 @@ export async function getProjectTree(req, res) {
   res.json(groupedProjectSoftwares);
 }
 
-export async function getAdminSoftwareProject(req, res) {
+export async function getAdminAndSoftwareFromProject(req, res) {
   const { adminId, softwareId, projectId } = req.params;
 
   let pId = 0;
@@ -153,6 +153,8 @@ export async function addSoftwareAdminProject(req, res) {
     });
   }
 }
+
+// Tengo que hacer el unchecked project task de software
 
 export async function deleteProject(req, res) {
   const { id } = req.params;

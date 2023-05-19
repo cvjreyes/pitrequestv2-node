@@ -9,7 +9,7 @@ import {
 } from "../../helpers/token.js";
 import { getName } from "../../helpers/usersname.js";
 import { sendEmail } from "../outlook/emails.js";
-import { getUserWithRoles, getUserById } from "../user/controllers.js";
+import { getRolesFromUser, getUserById } from "../user/controllers.js";
 
 export async function signin(req, res) {
   const { email } = req.body;
@@ -17,7 +17,7 @@ export async function signin(req, res) {
     if (!email) return res.status(404).json("Please, fill all fields");
     const validatedEmail = validator.validate(email);
     if (!validatedEmail) return res.status(401).json("Invalid credentials");
-    let user = await getUserWithRoles(email);
+    let user = await getRolesFromUser(email);
     if (!user) {
       const regex = /technipenergies.com$/;
       if (!regex.exec(email))
@@ -51,7 +51,7 @@ export async function login(req, res) {
   try {
     if (!email) return res.status(404).json("Please, fill all fields");
 
-    const user = await getUserWithRoles(email);
+    const user = await getRolesFromUser(email);
     if (user) {
       const token = generateToken(email, user.roles);
       await saveTokenIntoDB({ email: email, token: token });
@@ -98,7 +98,7 @@ export async function getUserInfo(req, res) {
   const { email } = req;
   try {
     if (!email) return res.status(401).json("Invalid token 1");
-    const user = await getUserWithRoles(email);
+    const user = await getRolesFromUser(email);
     if (!user) return res.status(401).json("Invalid token 2");
     return res.json({ user });
   } catch (err) {
