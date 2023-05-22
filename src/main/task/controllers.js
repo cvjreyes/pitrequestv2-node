@@ -2,6 +2,22 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+export async function getOneTask(req, res) {
+  const { id } = req.params;
+
+  let tId = 0;
+
+  if (id && !isNaN(Number(id))) {
+    tId = Number(id);
+  }
+
+  const getTask = await prisma.Task.findUnique({
+    where: { id: tId },
+  });
+
+  res.json(getTask);
+}
+
 export async function createTask(req, res) {
   const { name, softwareId } = req.body;
   try {

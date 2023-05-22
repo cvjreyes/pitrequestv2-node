@@ -10,16 +10,15 @@ export async function getAllSoftware(req, res) {
 export async function getOneSoftware(req, res) {
   const { id } = req.params;
 
-  let pId = 0;
+  let sId = 0;
 
   if (id && !isNaN(Number(id))) {
-    pId = Number(id);
+    sId = Number(id);
   }
 
   const getSoftware = await prisma.Software.findUnique({
-    where: { id: pId },
+    where: { id: sId },
   });
-  console.log(getSoftware);
 
   res.json(getSoftware);
 }
