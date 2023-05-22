@@ -4,27 +4,28 @@ import {
   addUserProject,
   createProject,
   deleteProject,
-  getAdminSoftwareProject,
+  getAdminAndSoftwareFromProject,
   getProjectTree,
-  removeAdminSoftware,
+  removeAdminSoftware
 } from "./controllers.js";
-import { createCharter, deleteCharter } from "./charter/controllers.js";
+import { getUnassignedAdmins } from "../user/controllers.js";
+import { getUnselectedSoftware } from "../software/controllers.js";
 
 const router = express.Router();
 
-router.get("/get_tree", getProjectTree);
+router.get("/tree", getProjectTree);
 router.get(
-  "/get_admin_software/:adminId/:softwareId/:projectId",
-  getAdminSoftwareProject
+  "/:projectId/admins/:adminId/softwares/:softwareId",
+  getAdminAndSoftwareFromProject
 );
+router.get("/:id/softwares/:softwareId/admins/unassigned", getUnassignedAdmins);
+router.get("/:id/softwares/unselected", getUnselectedSoftware);
 
-router.post("/create", createProject);
-router.post("/create/charter", createCharter);
-router.post("/add_user", addUserProject);
-router.post("/add_software_admin", addSoftwareAdminProject);
+router.post("/", createProject);
+router.post("/user", addUserProject);
+router.post("/softwares", addSoftwareAdminProject);
 
-router.delete("/delete/:id", deleteProject);
-router.delete("/delete/charter/:id", deleteCharter);
-router.delete("/remove/admin/software/:id", removeAdminSoftware);
+router.delete("/:id", deleteProject);
+router.delete("/admin/softwares/:id", removeAdminSoftware);
 
 export default router;

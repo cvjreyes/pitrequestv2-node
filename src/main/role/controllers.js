@@ -60,7 +60,7 @@ export async function createRoles(req, res) {
   }
 }
 
-export async function addRoleUser(req, res) {
+export async function addRoleToUser(req, res) {
   const { userId, rolId } = req.body;
   try {
     const addRole = await prisma.UsersRol.createMany({

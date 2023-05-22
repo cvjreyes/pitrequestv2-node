@@ -1,0 +1,110 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int                @id @default(autoincrement())
+  name             String
+  email            String             @unique
+  token            String             @unique @db.VarChar(250)
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @default(now()) @updatedAt
+  UsersRol         UsersRol[]
+  ProjectSoftwares ProjectSoftwares[]
+  Project          Project[]
+}
+
+model Rol {
+  id       Int        @id @default(autoincrement())
+  name     RolName    @unique
+  UsersRol UsersRol[]
+}
+
+enum RolName {
+  MATERIALS
+  ADMINTOOL
+  USER
+}
+
+model UsersRol {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  rolId  Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rol    Rol  @relation(fields: [rolId], references: [id], onDelete: Cascade)
+}
+
+model Software {
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  code                 String
+  Task                 Task[]
+  ProjectSoftwares     ProjectSoftwares[]
+  ProjectSoftwareTasks ProjectSoftwareTasks[]
+}
+
+model Task {
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  softwareId           Int
+  software             Software               @relation(fields: [softwareId], references: [id], onDelete: Cascade)
+  Subtask              Subtask[]
+  ProjectSoftwareTasks ProjectSoftwareTasks[]
+}
+
+model Subtask {
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  taskId               Int
+  task                 Task                   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  ProjectSoftwareTasks ProjectSoftwareTasks[]
+}
+
+model Project {
+  id                   Int                    @id @default(autoincrement())
+  name                 String
+  code                 String
+  estimatedHours       Float
+  userProjectId        Int
+  userProject          User                   @relation(fields: [userProjectId], references: [id], onDelete: Cascade)
+  Charter              Charter[]
+  ProjectSoftwares     ProjectSoftwares[]
+  ProjectSoftwareTasks ProjectSoftwareTasks[]
+}
+
+model Charter {
+  id        Int     @id @default(autoincrement())
+  name      String
+  projectId Int
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model ProjectSoftwares {
+  id         Int      @id @default(autoincrement())
+  projectId  Int
+  adminId    Int
+  softwareId Int
+  software   Software @relation(fields: [softwareId], references: [id], onDelete: Cascade)
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+}
+
+model ProjectSoftwareTasks {
+  id         Int      @id @default(autoincrement())
+  projectId  Int
+  softwareId Int
+  taskId     Int
+  subtaskId  Int
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  software   Software @relation(fields: [softwareId], references: [id], onDelete: Cascade)
+  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  subtask    Subtask  @relation(fields: [subtaskId], references: [id], onDelete: Cascade)
+}

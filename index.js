@@ -2,10 +2,16 @@ import express from "express";
 import cors from "cors";
 
 import authRouter from "./src/main/auth/routes.js";
-import roleRouter from "./src/main/role/routes.js";
+
 import userRouter from "./src/main/user/routes.js";
-import softwareRouter from "./src/main/software/routes.js";
+import roleRouter from "./src/main/role/routes.js";
+
 import projectRouter from "./src/main/project/routes.js";
+import charterRouter from "./src/main/charter/routes.js";
+
+import softwareRouter from "./src/main/software/routes.js";
+import taskRouter from "./src/main/task/routes.js";
+import subtaskRouter from "./src/main/subtask/routes.js";
 
 const app = express();
 
@@ -20,11 +26,15 @@ app.use(express.urlencoded({ extended: true }));
 // RUTAS
 app.use("/auth", authRouter);
 
-app.use("/user", userRouter);
+app.use("/users", userRouter);
+app.use("/roles", roleRouter);
 
-app.use("/role", roleRouter);
-app.use("/software", softwareRouter);
-app.use("/project", projectRouter);
+app.use("/projects", projectRouter);
+app.use("/charters", charterRouter);
+
+app.use("/softwares", softwareRouter);
+app.use("/tasks", taskRouter);
+app.use("/subtasks", subtaskRouter);
 
 // 404 HANDLING
 app.use("*", (req, res) => {

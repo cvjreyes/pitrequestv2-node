@@ -9,13 +9,13 @@ export async function getAll(req, res) {
 
 export async function getUnassignedAdmins(req, res) {
   try {
-    const { projectId, softwareId } = req.params;
+    const { id, softwareId } = req.params;
 
     let pId = 0;
     let sId = 0;
 
-    if (projectId && !isNaN(parseInt(projectId))) {
-      pId = parseInt(projectId);
+    if (id && !isNaN(parseInt(id))) {
+      pId = parseInt(id);
     }
     if (softwareId && !isNaN(parseInt(softwareId))) {
       sId = parseInt(softwareId);
@@ -53,7 +53,7 @@ export async function getUnassignedAdmins(req, res) {
   }
 }
 
-export async function getUsersAdmins(req, res) {
+export async function getAdmins(req, res) {
   try {
     const Admins = await prisma.User.findMany({
       select: {
@@ -79,7 +79,7 @@ export async function getUsersAdmins(req, res) {
   }
 }
 
-export async function getUserWithRoles(email) {
+export async function getRolesFromUser(email) {
   const user = await prisma.User.findUnique({
     where: { email },
   });
@@ -114,5 +114,5 @@ export async function getUserById(id) {
 
   const roles = userRoles.map((userRol) => userRol.rol.name);
 
-  return { ...user, roles };
+  return { ...getUserByID, roles };
 }
