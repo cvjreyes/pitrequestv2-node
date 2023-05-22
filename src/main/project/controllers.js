@@ -154,7 +154,27 @@ export async function addSoftwareAdminProject(req, res) {
   }
 }
 
-// Tengo que hacer el unchecked project task de software
+export async function updateProject(req, res) {
+  const { id } = req.params;
+  const { name, code, estimatedHours } = req.body;
+  try {
+    const newProject = await prisma.Project.update({
+      data: {
+        name,
+        code,
+        estimatedHours: parseFloat(estimatedHours),
+      },
+      where: { id: Number(id) },
+    });
+
+    return res.json({ newProject });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while creating the Project" });
+  }
+}
 
 export async function deleteProject(req, res) {
   const { id } = req.params;

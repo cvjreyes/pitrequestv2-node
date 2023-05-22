@@ -1,4 +1,6 @@
 import express from "express";
+import { getUnselectedSoftware } from "../software/controllers.js";
+import { getUnassignedAdmins } from "../user/controllers.js";
 import {
   addSoftwareAdminProject,
   addUserProject,
@@ -6,10 +8,9 @@ import {
   deleteProject,
   getAdminAndSoftwareFromProject,
   getProjectTree,
-  removeAdminSoftware
+  removeAdminSoftware,
+  updateProject
 } from "./controllers.js";
-import { getUnassignedAdmins } from "../user/controllers.js";
-import { getUnselectedSoftware } from "../software/controllers.js";
 
 const router = express.Router();
 
@@ -24,6 +25,8 @@ router.get("/:id/softwares/unselected", getUnselectedSoftware);
 router.post("/", createProject);
 router.post("/user", addUserProject);
 router.post("/softwares", addSoftwareAdminProject);
+
+router.put("/:id", updateProject);
 
 router.delete("/:id", deleteProject);
 router.delete("/admin/softwares/:id", removeAdminSoftware);

@@ -63,6 +63,27 @@ export async function createSoftware(req, res) {
   }
 }
 
+export async function updateSoftware(req, res) {
+  const { id } = req.params;
+  const { name, code } = req.body;
+  try {
+    const newSoftware = await prisma.Software.update({
+      data: {
+        name,
+        code,
+      },
+      where: { id: Number(id) },
+    });
+
+    return res.json({ newSoftware });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while editing the Software" });
+  }
+}
+
 export async function deleteSoftware(req, res) {
   const { id } = req.params;
   try {
