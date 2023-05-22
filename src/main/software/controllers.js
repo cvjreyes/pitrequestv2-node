@@ -7,6 +7,23 @@ export async function getAllSoftware(req, res) {
   res.json(getSoftwares);
 }
 
+export async function getOneSoftware(req, res) {
+  const { id } = req.params;
+
+  let pId = 0;
+
+  if (id && !isNaN(Number(id))) {
+    pId = Number(id);
+  }
+
+  const getSoftware = await prisma.Software.findUnique({
+    where: { id: pId },
+  });
+  console.log(getSoftware);
+
+  res.json(getSoftware);
+}
+
 export async function getUnselectedSoftware(req, res) {
   const { id } = req.params;
 
