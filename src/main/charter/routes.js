@@ -1,7 +1,14 @@
 import express from "express";
-import { createCharter, deleteCharter, updateCharter } from "./controllers.js";
+import {
+  createCharter,
+  deleteCharter,
+  getOneCharter,
+  updateCharter,
+} from "./controllers.js";
 
 const router = express.Router();
+
+router.get("/:id", getOneCharter);
 
 router.post("/", createCharter);
 

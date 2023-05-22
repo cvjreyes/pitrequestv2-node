@@ -67,6 +67,22 @@ export async function getProjectTree(req, res) {
   res.json(groupedProjectSoftwares);
 }
 
+export async function getOneProject(req, res) {
+  const { id } = req.params;
+
+  let pId = 0;
+
+  if (id && !isNaN(Number(id))) {
+    pId = Number(id);
+  }
+
+  const getProject = await prisma.Project.findUnique({
+    where: { id: pId },
+  });
+
+  res.json(getProject);
+}
+
 export async function getAdminAndSoftwareFromProject(req, res) {
   const { adminId, softwareId, projectId } = req.params;
 
