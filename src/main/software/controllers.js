@@ -115,3 +115,19 @@ export async function deleteSoftware(req, res) {
       .json({ error: "An error occurred while deleting the Software" });
   }
 }
+
+export async function removeSoftwareFromProject(req, res) {
+  const { id, softwareId } = req.params;
+  try {
+    const removeSoftware = await prisma.ProjectSoftwares.deleteMany({
+      where: { projectId: Number(id), softwareId: Number(softwareId) },
+    });
+
+    return res.json({ removeSoftware });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while deleting the Software" });
+  }
+}

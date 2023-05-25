@@ -95,6 +95,8 @@ model ProjectSoftwares {
   software   Software @relation(fields: [softwareId], references: [id], onDelete: Cascade)
   project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, adminId, softwareId])
 }
 
 model ProjectSoftwareTasks {
