@@ -7,6 +7,22 @@ export async function getAllSoftware(req, res) {
   res.json(getSoftwares);
 }
 
+export async function getOneSoftware(req, res) {
+  const { id } = req.params;
+
+  let sId = 0;
+
+  if (id && !isNaN(Number(id))) {
+    sId = Number(id);
+  }
+
+  const getSoftware = await prisma.Software.findUnique({
+    where: { id: sId },
+  });
+
+  res.json(getSoftware);
+}
+
 export async function getUnselectedSoftware(req, res) {
   const { id } = req.params;
 
@@ -63,6 +79,27 @@ export async function createSoftware(req, res) {
   }
 }
 
+export async function updateSoftware(req, res) {
+  const { id } = req.params;
+  const { name, code } = req.body;
+  try {
+    const newSoftware = await prisma.Software.update({
+      data: {
+        name,
+        code,
+      },
+      where: { id: Number(id) },
+    });
+
+    return res.json({ newSoftware });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while editing the Software" });
+  }
+}
+
 export async function deleteSoftware(req, res) {
   const { id } = req.params;
   try {
@@ -71,6 +108,22 @@ export async function deleteSoftware(req, res) {
     });
 
     return res.json({ deleteSoftware });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while deleting the Software" });
+  }
+}
+
+export async function removeSoftwareFromProject(req, res) {
+  const { id, softwareId } = req.params;
+  try {
+    const removeSoftware = await prisma.ProjectSoftwares.deleteMany({
+      where: { projectId: Number(id), softwareId: Number(softwareId) },
+    });
+
+    return res.json({ removeSoftware });
   } catch (err) {
     console.log(err);
     return res

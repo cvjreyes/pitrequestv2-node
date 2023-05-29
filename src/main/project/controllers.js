@@ -67,6 +67,22 @@ export async function getProjectTree(req, res) {
   res.json(groupedProjectSoftwares);
 }
 
+export async function getOneProject(req, res) {
+  const { id } = req.params;
+
+  let pId = 0;
+
+  if (id && !isNaN(Number(id))) {
+    pId = Number(id);
+  }
+
+  const getProject = await prisma.Project.findUnique({
+    where: { id: pId },
+  });
+
+  res.json(getProject);
+}
+
 export async function getAdminAndSoftwareFromProject(req, res) {
   const { adminId, softwareId, projectId } = req.params;
 
@@ -106,6 +122,15 @@ export async function createProject(req, res) {
       },
     });
 
+    const projectId = newProject.id;
+
+    await prisma.ProjectUsers.create({
+      data: {
+        userId: userProjectId,
+        projectId: projectId,
+      },
+    });
+
     return res.json({ newProject });
   } catch (err) {
     console.log(err);
@@ -115,26 +140,7 @@ export async function createProject(req, res) {
   }
 }
 
-export async function addUserProject(req, res) {
-  const { projectId, userId } = req.body;
-  try {
-    const newProjectUser = await prisma.ProjectUsers.create({
-      data: {
-        projectId: Number(projectId),
-        userId: Number(userId),
-      },
-    });
-
-    return res.json({ newProjectUser });
-  } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ error: "An error occurred while creating the Project" });
-  }
-}
-
-export async function addSoftwareAdminProject(req, res) {
+export async function addSoftwareAndAdminToProject(req, res) {
   const { projectId, adminId, softwareId } = req.body;
   try {
     const newSoftwareProject = await prisma.ProjectSoftwares.create({
@@ -145,6 +151,25 @@ export async function addSoftwareAdminProject(req, res) {
       },
     });
 
+    // Verificar si el usuario ya está asignado al proyecto
+    const existingProjectUser = await prisma.ProjectUsers.findFirst({
+      where: {
+        userId: Number(adminId),
+        projectId: Number(projectId),
+      },
+    });
+
+    // Si el usuario ya está asignado al proyecto, no hacer la inserción
+    if (!existingProjectUser) {
+      // Crear una nueva entrada en la tabla ProjectUsers
+      await prisma.ProjectUsers.create({
+        data: {
+          userId: Number(adminId),
+          projectId: Number(projectId),
+        },
+      });
+    }
+
     return res.json({ newSoftwareProject });
   } catch (err) {
     console.log(err);
@@ -154,7 +179,27 @@ export async function addSoftwareAdminProject(req, res) {
   }
 }
 
-// Tengo que hacer el unchecked project task de software
+export async function updateProject(req, res) {
+  const { id } = req.params;
+  const { name, code, estimatedHours } = req.body;
+  try {
+    const newProject = await prisma.Project.update({
+      data: {
+        name,
+        code,
+        estimatedHours: parseFloat(estimatedHours),
+      },
+      where: { id: Number(id) },
+    });
+
+    return res.json({ newProject });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while creating the Project" });
+  }
+}
 
 export async function deleteProject(req, res) {
   const { id } = req.params;

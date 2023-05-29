@@ -20,17 +20,19 @@ model User {
   UsersRol         UsersRol[]
   ProjectSoftwares ProjectSoftwares[]
   Project          Project[]
+  ProjectUsers     ProjectUsers[]
 }
 
 model Rol {
   id       Int        @id @default(autoincrement())
-  name     RolName    @unique
+  name     RolName    @unique @default(USER)
   UsersRol UsersRol[]
 }
 
 enum RolName {
   MATERIALS
   ADMINTOOL
+  ADMINLEAD
   USER
 }
 
@@ -43,41 +45,38 @@ model UsersRol {
 }
 
 model Software {
-  id                   Int                    @id @default(autoincrement())
-  name                 String
-  code                 String
-  Task                 Task[]
-  ProjectSoftwares     ProjectSoftwares[]
-  ProjectSoftwareTasks ProjectSoftwareTasks[]
+  id               Int                @id @default(autoincrement())
+  name             String
+  code             String
+  Task             Task[]
+  ProjectSoftwares ProjectSoftwares[]
 }
 
 model Task {
-  id                   Int                    @id @default(autoincrement())
-  name                 String
-  softwareId           Int
-  software             Software               @relation(fields: [softwareId], references: [id], onDelete: Cascade)
-  Subtask              Subtask[]
-  ProjectSoftwareTasks ProjectSoftwareTasks[]
+  id         Int       @id @default(autoincrement())
+  name       String
+  softwareId Int
+  software   Software  @relation(fields: [softwareId], references: [id], onDelete: Cascade)
+  Subtask    Subtask[]
 }
 
 model Subtask {
-  id                   Int                    @id @default(autoincrement())
-  name                 String
-  taskId               Int
-  task                 Task                   @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  ProjectSoftwareTasks ProjectSoftwareTasks[]
+  id     Int    @id @default(autoincrement())
+  name   String
+  taskId Int
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
 }
 
 model Project {
-  id                   Int                    @id @default(autoincrement())
-  name                 String
-  code                 String
-  estimatedHours       Float
-  userProjectId        Int
-  userProject          User                   @relation(fields: [userProjectId], references: [id], onDelete: Cascade)
-  Charter              Charter[]
-  ProjectSoftwares     ProjectSoftwares[]
-  ProjectSoftwareTasks ProjectSoftwareTasks[]
+  id               Int                @id @default(autoincrement())
+  name             String
+  code             String
+  estimatedHours   Float
+  userProjectId    Int
+  userProject      User               @relation(fields: [userProjectId], references: [id], onDelete: Cascade)
+  Charter          Charter[]
+  ProjectSoftwares ProjectSoftwares[]
+  ProjectUsers     ProjectUsers[]
 }
 
 model Charter {
@@ -95,16 +94,16 @@ model ProjectSoftwares {
   software   Software @relation(fields: [softwareId], references: [id], onDelete: Cascade)
   project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   user       User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, adminId, softwareId])
 }
 
-model ProjectSoftwareTasks {
-  id         Int      @id @default(autoincrement())
-  projectId  Int
-  softwareId Int
-  taskId     Int
-  subtaskId  Int
-  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  software   Software @relation(fields: [softwareId], references: [id], onDelete: Cascade)
-  task       Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  subtask    Subtask  @relation(fields: [subtaskId], references: [id], onDelete: Cascade)
+model ProjectUsers {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  projectId Int
+  User      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
 }
