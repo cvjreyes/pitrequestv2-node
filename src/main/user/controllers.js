@@ -103,6 +103,54 @@ export async function getRolesFromUser(email) {
   }
 }
 
+export async function getProjectsAndRolesFromUser(req, res) {
+  const { id } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: Number(id) },
+      include: {
+        ProjectUsers: {
+          select: {
+            projectId: true, // Add this line to select the project ID
+            Project: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
+          },
+        },
+        UsersRol: {
+          select: {
+            rol: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      return null;
+    }
+
+    const projects = user.ProjectUsers.map(
+      (projectUser) => projectUser.Project
+    );
+    const roles = user.UsersRol.map((userRol) => userRol.rol);
+
+    return res.json({ projects, roles });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "An error occurred while getting the User Info" });
+  }
+}
+
 export async function getUserById(id) {
   const getUserByID = await prisma.User.findUnique({
     where: { id },

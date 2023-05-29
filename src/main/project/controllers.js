@@ -122,6 +122,15 @@ export async function createProject(req, res) {
       },
     });
 
+    const projectId = newProject.id;
+
+    await prisma.ProjectUsers.create({
+      data: {
+        userId: userProjectId,
+        projectId: projectId,
+      },
+    });
+
     return res.json({ newProject });
   } catch (err) {
     console.log(err);
@@ -131,26 +140,7 @@ export async function createProject(req, res) {
   }
 }
 
-export async function addUserProject(req, res) {
-  const { projectId, userId } = req.body;
-  try {
-    const newProjectUser = await prisma.ProjectUsers.create({
-      data: {
-        projectId: Number(projectId),
-        userId: Number(userId),
-      },
-    });
-
-    return res.json({ newProjectUser });
-  } catch (err) {
-    console.log(err);
-    return res
-      .status(500)
-      .json({ error: "An error occurred while creating the Project" });
-  }
-}
-
-export async function addSoftwareAdminProject(req, res) {
+export async function addSoftwareAndAdminToProject(req, res) {
   const { projectId, adminId, softwareId } = req.body;
   try {
     const newSoftwareProject = await prisma.ProjectSoftwares.create({
@@ -160,6 +150,25 @@ export async function addSoftwareAdminProject(req, res) {
         softwareId: Number(softwareId),
       },
     });
+
+    // Verificar si el usuario ya está asignado al proyecto
+    const existingProjectUser = await prisma.ProjectUsers.findFirst({
+      where: {
+        userId: Number(adminId),
+        projectId: Number(projectId),
+      },
+    });
+
+    // Si el usuario ya está asignado al proyecto, no hacer la inserción
+    if (!existingProjectUser) {
+      // Crear una nueva entrada en la tabla ProjectUsers
+      await prisma.ProjectUsers.create({
+        data: {
+          userId: Number(adminId),
+          projectId: Number(projectId),
+        },
+      });
+    }
 
     return res.json({ newSoftwareProject });
   } catch (err) {

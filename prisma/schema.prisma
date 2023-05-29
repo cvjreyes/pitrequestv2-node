@@ -102,6 +102,8 @@ model ProjectUsers {
   id        Int     @id @default(autoincrement())
   userId    Int
   projectId Int
-  User      User    @relation(fields: [userId], references: [id])
-  Project   Project @relation(fields: [projectId], references: [id])
+  User      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
 }

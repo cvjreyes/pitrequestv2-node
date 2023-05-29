@@ -2,15 +2,14 @@ import express from "express";
 import { getUnselectedSoftware, removeSoftwareFromProject } from "../software/controllers.js";
 import { changeAdmin, getUnassignedAdmins } from "../user/controllers.js";
 import {
-  addSoftwareAdminProject,
-  addUserProject,
+  addSoftwareAndAdminToProject,
   createProject,
   deleteProject,
   getAdminAndSoftwareFromProject,
   getOneProject,
   getProjectTree,
   removeAdminSoftware,
-  updateProject,
+  updateProject
 } from "./controllers.js";
 
 const router = express.Router();
@@ -25,8 +24,7 @@ router.get("/:id/softwares/:softwareId/admins/unassigned", getUnassignedAdmins);
 router.get("/:id/softwares/unselected", getUnselectedSoftware);
 
 router.post("/", createProject);
-router.post("/user", addUserProject);
-router.post("/softwares", addSoftwareAdminProject);
+router.post("/softwares", addSoftwareAndAdminToProject);
 
 router.put("/:id", updateProject);
 router.put("/:projectId/softwares/:softwareId/admins/:adminId", changeAdmin);
