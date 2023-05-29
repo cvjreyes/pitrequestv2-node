@@ -103,6 +103,42 @@ export async function getRolesFromUser(email) {
   }
 }
 
+export async function getAllProjectsAndRolesFromUsers(req, res) {
+  try {
+    const users = await prisma.user.findMany({
+      include: {
+        ProjectUsers: {
+          select: {
+            projectId: true,
+            Project: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
+          },
+        },
+        UsersRol: {
+          select: {
+            rol: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred while getting the Users data table" });
+  }
+}
+
+
 export async function getProjectsAndRolesFromUser(req, res) {
   const { id } = req.params;
   try {
