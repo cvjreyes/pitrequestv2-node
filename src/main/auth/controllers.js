@@ -1,4 +1,5 @@
 import validator from "email-validator";
+import { PrismaClient } from "@prisma/client";
 
 import { generateLink } from "../../helpers/emails.js";
 import {
@@ -10,6 +11,8 @@ import {
 import { getName } from "../../helpers/usersname.js";
 import { sendEmail } from "../outlook/emails.js";
 import { getRolesFromUser, getUserById } from "../user/controllers.js";
+
+const prisma = new PrismaClient();
 
 export async function signin(req, res) {
   const { email } = req.body;
@@ -32,6 +35,15 @@ export async function signin(req, res) {
         token: token,
       });
       if (ok) {
+        // Agrega el código para asignar el rol de "USER" al usuario
+        const userWithRole = await getRolesFromUser(email);
+        const userRole = await prisma.Rol.findUnique({
+          where: { name: "USER" },
+        });
+        await prisma.UsersRol.create({
+          data: { userId: userWithRole.id, rolId: userRole.id },
+        });
+
         return res.json(`Email ${email} registered successfully`);
       } else throw new Error("Sending email failed");
     } else {

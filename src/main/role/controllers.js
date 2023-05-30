@@ -2,15 +2,8 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function getAll(req, res) {
-  const roles = await prisma.Rol.findMany({
-    select: {
-      name: true,
-    },
-    include:{
-      roles: true
-    }
-  });
+export async function getAllRoles(req, res) {
+  const roles = await prisma.Rol.findMany();
   return res.json({ roles });
 }
 
@@ -29,7 +22,7 @@ export async function getUserRoles(req, res) {
       },
     },
   });
-  
+
   // Es para agrupar los roles dentro de un mismo objeto de user
   const groupedUserRoles = userRoles.reduce((acc, { user, rol }) => {
     if (!acc[user.name]) {
