@@ -2,6 +2,10 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+export async function getAll(req, res) {
+  const Projects = await prisma.Project.findMany();
+  return res.json({ Projects });
+}
 export async function getProjectTree(req, res) {
   const ProjectTree = await prisma.Project.findMany({
     include: {

@@ -6,6 +6,7 @@ import {
   createProject,
   deleteProject,
   getAdminAndSoftwareFromProject,
+  getAll,
   getOneProject,
   getProjectTree,
   removeAdminSoftware,
@@ -14,6 +15,7 @@ import {
 
 const router = express.Router();
 
+router.get("/", getAll);
 router.get("/tree", getProjectTree);
 router.get("/:id", getOneProject);
 router.get(
