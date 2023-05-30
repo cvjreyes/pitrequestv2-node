@@ -89,11 +89,11 @@ model Charter {
 model ProjectSoftwares {
   id         Int      @id @default(autoincrement())
   projectId  Int
-  adminId    Int
+  adminId    Int?
   softwareId Int
   software   Software @relation(fields: [softwareId], references: [id], onDelete: Cascade)
   project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [adminId], references: [id], onDelete: SetNull)
 
   @@unique([projectId, adminId, softwareId])
 }

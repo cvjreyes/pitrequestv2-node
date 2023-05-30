@@ -29,10 +29,10 @@ router.post("/", createProject);
 router.post("/softwares", addSoftwareAndAdminToProject);
 
 router.put("/:id", updateProject);
+router.put("/admin/softwares/:id", removeAdminSoftware);
 router.put("/:projectId/softwares/:softwareId/admins/:adminId", changeAdmin);
 
 router.delete("/:id", deleteProject);
-router.delete("/admin/softwares/:id", removeAdminSoftware);
 router.delete("/:id/softwares/:softwareId", removeSoftwareFromProject);
 
 export default router;

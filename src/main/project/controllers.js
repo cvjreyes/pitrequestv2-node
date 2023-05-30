@@ -6,6 +6,7 @@ export async function getAll(req, res) {
   const Projects = await prisma.Project.findMany();
   return res.json({ Projects });
 }
+
 export async function getProjectTree(req, res) {
   const ProjectTree = await prisma.Project.findMany({
     include: {
@@ -33,7 +34,6 @@ export async function getProjectTree(req, res) {
     },
   });
 
-  // Esto es para juntar los usuarios que hay en cada software dentro del objeto ProjectSoftwares
   const groupedProjectSoftwares = ProjectTree.reduce((acc, project) => {
     const softwares = project.ProjectSoftwares.reduce(
       (acc, projectSoftware) => {
@@ -41,7 +41,18 @@ export async function getProjectTree(req, res) {
         const existingSoftware = acc[key];
 
         if (!projectSoftware.user) {
-          return acc; // Si el usuario es nulo, salta este ciclo de reduce.
+          // Si no hay usuario (administrador), se crea una entrada en ProjectSoftwares sin usuarios
+          if (existingSoftware) {
+            return acc;
+          }
+
+          const newSoftware = {
+            software: projectSoftware.software,
+            users: [],
+          };
+
+          acc[key] = newSoftware;
+          return acc;
         }
 
         if (existingSoftware) {
@@ -224,8 +235,11 @@ export async function deleteProject(req, res) {
 export async function removeAdminSoftware(req, res) {
   const { id } = req.params;
   try {
-    const removeAdminSoftware = await prisma.ProjectSoftwares.delete({
+    const removeAdminSoftware = await prisma.ProjectSoftwares.update({
       where: { id: Number(id) },
+      data: {
+        adminId: null,
+      },
     });
 
     return res.json({ removeAdminSoftware });
