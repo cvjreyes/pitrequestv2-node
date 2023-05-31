@@ -17,31 +17,31 @@ model User {
   token            String             @unique @db.VarChar(250)
   created_at       DateTime           @default(now())
   updated_at       DateTime           @default(now()) @updatedAt
-  UsersRol         UsersRol[]
+  UsersRole         UsersRole[]
   ProjectSoftwares ProjectSoftwares[]
   Project          Project[]
   ProjectUsers     ProjectUsers[]
 }
 
-model Rol {
+model Role {
   id       Int        @id @default(autoincrement())
-  name     RolName    @unique @default(USER)
-  UsersRol UsersRol[]
+  name     RoleName    @unique @default(USER)
+  UsersRole UsersRole[]
 }
 
-enum RolName {
+enum RoleName {
   MATERIALS
   ADMINTOOL
   ADMINLEAD
   USER
 }
 
-model UsersRol {
+model UsersRole {
   id     Int  @id @default(autoincrement())
   userId Int
-  rolId  Int
+  roleId  Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rol    Rol  @relation(fields: [rolId], references: [id], onDelete: Cascade)
+  role    Role  @relation(fields: [roleId], references: [id], onDelete: Cascade)
 }
 
 model Software {

@@ -37,11 +37,11 @@ export async function signin(req, res) {
       if (ok) {
         // Agrega el código para asignar el rol de "USER" al usuario
         const userWithRole = await getRolesFromUser(email);
-        const userRole = await prisma.Rol.findUnique({
+        const userRole = await prisma.Role.findUnique({
           where: { name: "USER" },
         });
-        await prisma.UsersRol.create({
-          data: { userId: userWithRole.id, rolId: userRole.id },
+        await prisma.UsersRole.create({
+          data: { userId: userWithRole.id, roleId: userRole.id },
         });
 
         return res.json(`Email ${email} registered successfully`);

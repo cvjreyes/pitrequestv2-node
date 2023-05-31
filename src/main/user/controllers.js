@@ -28,9 +28,9 @@ export async function getUnassignedAdmins(req, res) {
         email: true,
       },
       where: {
-        UsersRol: {
+        UsersRole: {
           some: {
-            rol: {
+            role: {
               name: "ADMINTOOL",
             },
           },
@@ -62,9 +62,9 @@ export async function getAdmins(req, res) {
         email: true,
       },
       where: {
-        UsersRol: {
+        UsersRole: {
           some: {
-            rol: {
+            role: {
               name: "ADMINTOOL",
             },
           },
@@ -89,12 +89,12 @@ export async function getRolesFromUser(email) {
       return null;
     }
 
-    const userRoles = await prisma.UsersRol.findMany({
+    const userRoles = await prisma.UsersRole.findMany({
       where: { userId: user.id },
-      include: { rol: true },
+      include: { role: true },
     });
 
-    const roles = userRoles.map((userRol) => userRol.rol.name);
+    const roles = userRoles.map((userRole) => userRole.role.name);
 
     return { ...user, roles };
   } catch (error) {
@@ -123,9 +123,9 @@ export async function getAllProjectsAndRolesFromUsers(req, res) {
             },
           },
         },
-        UsersRol: {
+        UsersRole: {
           select: {
-            rol: {
+            role: {
               select: {
                 id: true,
                 name: true,
@@ -162,9 +162,9 @@ export async function getProjectsAndRolesFromUser(req, res) {
             },
           },
         },
-        UsersRol: {
+        UsersRole: {
           select: {
-            rol: {
+            role: {
               select: {
                 id: true,
                 name: true,
@@ -182,7 +182,7 @@ export async function getProjectsAndRolesFromUser(req, res) {
     const projects = user.ProjectUsers.map(
       (projectUser) => projectUser.Project
     );
-    const roles = user.UsersRol.map((userRol) => userRol.rol);
+    const roles = user.UsersRole.map((userRole) => userRole.role);
 
     return res.json({ projects, roles });
   } catch (error) {
@@ -201,12 +201,12 @@ export async function getUserById(id) {
     return null;
   }
 
-  const userRoles = await prisma.UsersRol.findMany({
+  const userRoles = await prisma.UsersRole.findMany({
     where: { userId: id },
-    include: { rol: true },
+    include: { role: true },
   });
 
-  const roles = userRoles.map((userRol) => userRol.rol.name);
+  const roles = userRoles.map((userRole) => userRole.role.name);
 
   return { ...getUserByID, roles };
 }
@@ -234,5 +234,65 @@ export async function changeAdmin(req, res) {
     return res
       .status(500)
       .json({ error: "An error occurred while editing the Software" });
+  }
+}
+
+export async function addProjectsAndRoles(req, res) {
+  const { userId, projectIds, roleIds } = req.body; // Cambio de roleId a roleIds
+  try {
+    if (roleIds && projectIds) {
+      const updatedUserRoles = await Promise.all(
+        roleIds.map((roleId) =>
+          prisma.UsersRole.create({
+            data: {
+              userId: Number(userId),
+              roleId: Number(roleId),
+            },
+          })
+        )
+      );
+      const updatedUserProjects = await Promise.all(
+        projectIds.map((projectId) =>
+          prisma.ProjectUsers.create({
+            data: {
+              userId: Number(userId),
+              projectId: Number(projectId),
+            },
+          })
+        )
+      );
+      return res.json({ updatedUserRoles, updatedUserProjects });
+    } else if (roleIds) {
+      const updatedUserRoles = await Promise.all(
+        roleIds.map((roleId) =>
+          prisma.UsersRole.create({
+            data: {
+              userId: Number(userId),
+              roleId: Number(roleId),
+            },
+          })
+        )
+      );
+      return res.json({ updatedUserRoles });
+    } else if (projectIds) {
+      const updatedUserProjects = await Promise.all(
+        projectIds.map((projectId) =>
+          prisma.ProjectUsers.create({
+            data: {
+              userId: Number(userId),
+              projectId: Number(projectId),
+            },
+          })
+        )
+      );
+      return res.json({ updatedUserProjects });
+    } else {
+      return res.status(401).json({ error: "No changes in the User" });
+    }
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while editing the User" });
   }
 }
