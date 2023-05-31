@@ -237,62 +237,89 @@ export async function changeAdmin(req, res) {
   }
 }
 
-export async function addProjectsAndRoles(req, res) {
-  const { userId, projectIds, roleIds } = req.body; // Cambio de roleId a roleIds
+export async function updateProjectsAndRoles(req, res) {
+  const { userId, projectIds, roleIds } = req.body;
+
   try {
-    if (roleIds && projectIds) {
-      const updatedUserRoles = await Promise.all(
-        roleIds.map((roleId) =>
-          prisma.UsersRole.create({
-            data: {
-              userId: Number(userId),
-              roleId: Number(roleId),
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ProjectUsers: {
+          deleteMany: {},
+          create: projectIds.map((projectId) => ({
+            projectId,
+          })),
+        },
+        UsersRole: {
+          deleteMany: {
+            NOT: {
+              roleId: {
+                in: 1,
+              },
             },
-          })
-        )
-      );
-      const updatedUserProjects = await Promise.all(
-        projectIds.map((projectId) =>
-          prisma.ProjectUsers.create({
-            data: {
-              userId: Number(userId),
-              projectId: Number(projectId),
-            },
-          })
-        )
-      );
-      return res.json({ updatedUserRoles, updatedUserProjects });
-    } else if (roleIds) {
-      const updatedUserRoles = await Promise.all(
-        roleIds.map((roleId) =>
-          prisma.UsersRole.create({
-            data: {
-              userId: Number(userId),
-              roleId: Number(roleId),
-            },
-          })
-        )
-      );
-      return res.json({ updatedUserRoles });
-    } else if (projectIds) {
-      const updatedUserProjects = await Promise.all(
-        projectIds.map((projectId) =>
-          prisma.ProjectUsers.create({
-            data: {
-              userId: Number(userId),
-              projectId: Number(projectId),
-            },
-          })
-        )
-      );
-      return res.json({ updatedUserProjects });
-    } else {
-      return res.status(401).json({ error: "No changes in the User" });
-    }
+          },
+          create: roleIds.map((roleId) => ({
+            roleId,
+          })),
+        },
+      },
+    });
+
+    return res.json({ success: true });
   } catch (err) {
     console.log(err);
     return res
       .status(500)
-      .json({ error: "An error occurred while editing the User" });
+      .json({ error: "An error occurred while updating user data" });
   }
 }
+
+// if (roleIds && projectIds) {
+//   const updatedUserRoles = await Promise.all(
+//     roleIds.map((roleId) =>
+//       prisma.UsersRole.create({
+//         data: {
+//           userId: Number(userId),
+//           roleId: Number(roleId),
+//         },
+//       })
+//     )
+//   );
+//   const updatedUserProjects = await Promise.all(
+//     projectIds.map((projectId) =>
+//       prisma.ProjectUsers.create({
+//         data: {
+//           userId: Number(userId),
+//           projectId: Number(projectId),
+//         },
+//       })
+//     )
+//   );
+//   return res.json({ updatedUserRoles, updatedUserProjects });
+// } else if (roleIds) {
+//   const updatedUserRoles = await Promise.all(
+//     roleIds.map((roleId) =>
+//       prisma.UsersRole.create({
+//         data: {
+//           userId: Number(userId),
+//           roleId: Number(roleId),
+//         },
+//       })
+//     )
+//   );
+//   return res.json({ updatedUserRoles });
+// } else if (projectIds) {
+//   const updatedUserProjects = await Promise.all(
+//     projectIds.map((projectId) =>
+//       prisma.ProjectUsers.create({
+//         data: {
+//           userId: Number(userId),
+//           projectId: Number(projectId),
+//         },
+//       })
+//     )
+//   );
+//   return res.json({ updatedUserProjects });
+// } else {
+//   return res.status(401).json({ error: "No changes in the User" });
+// }
