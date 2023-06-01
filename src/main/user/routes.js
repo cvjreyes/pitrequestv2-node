@@ -1,13 +1,14 @@
 import express from "express";
+import { addRoleToUser } from "../role/controllers.js";
 import {
-  getAll,
-  getRolesFromUser,
+  deleteUser,
   getAdmins,
-  getProjectsAndRolesFromUser,
+  getAll,
   getAllProjectsAndRolesFromUsers,
+  getProjectsAndRolesFromUser,
+  getRolesFromUser,
   updateProjectsAndRoles,
 } from "./controllers.js";
-import { addRoleToUser } from "../role/controllers.js";
 
 const router = express.Router();
 
@@ -20,5 +21,7 @@ router.get("/admins", getAdmins);
 router.post("/:id/roles", addRoleToUser);
 
 router.put("/projects/roles", updateProjectsAndRoles);
+
+router.delete("/:id", deleteUser);
 
 export default router;

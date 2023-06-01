@@ -274,52 +274,18 @@ export async function updateProjectsAndRoles(req, res) {
   }
 }
 
-// if (roleIds && projectIds) {
-//   const updatedUserRoles = await Promise.all(
-//     roleIds.map((roleId) =>
-//       prisma.UsersRole.create({
-//         data: {
-//           userId: Number(userId),
-//           roleId: Number(roleId),
-//         },
-//       })
-//     )
-//   );
-//   const updatedUserProjects = await Promise.all(
-//     projectIds.map((projectId) =>
-//       prisma.ProjectUsers.create({
-//         data: {
-//           userId: Number(userId),
-//           projectId: Number(projectId),
-//         },
-//       })
-//     )
-//   );
-//   return res.json({ updatedUserRoles, updatedUserProjects });
-// } else if (roleIds) {
-//   const updatedUserRoles = await Promise.all(
-//     roleIds.map((roleId) =>
-//       prisma.UsersRole.create({
-//         data: {
-//           userId: Number(userId),
-//           roleId: Number(roleId),
-//         },
-//       })
-//     )
-//   );
-//   return res.json({ updatedUserRoles });
-// } else if (projectIds) {
-//   const updatedUserProjects = await Promise.all(
-//     projectIds.map((projectId) =>
-//       prisma.ProjectUsers.create({
-//         data: {
-//           userId: Number(userId),
-//           projectId: Number(projectId),
-//         },
-//       })
-//     )
-//   );
-//   return res.json({ updatedUserProjects });
-// } else {
-//   return res.status(401).json({ error: "No changes in the User" });
-// }
+export async function deleteUser(req, res) {
+  const { id } = req.params;
+  try {
+    const deleteUser = await prisma.User.delete({
+      where: { id: Number(id) },
+    });
+
+    return res.json({ deleteUser });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while deleting the Task" });
+  }
+}
