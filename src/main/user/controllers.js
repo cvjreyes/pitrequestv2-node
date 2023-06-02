@@ -1,4 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+import hasRoles from "../../helpers/auth.js";
+import { generateToken, saveTokenIntoDB } from "../../helpers/token.js";
 
 const prisma = new PrismaClient();
 
@@ -8,8 +10,11 @@ export async function getAll(req, res) {
 }
 
 export async function getUnassignedAdmins(req, res) {
+  const { id, softwareId } = req.params;
+  const { roles } = req;
+
   try {
-    const { id, softwareId } = req.params;
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
 
     let pId = 0;
     let sId = 0;
@@ -54,7 +59,10 @@ export async function getUnassignedAdmins(req, res) {
 }
 
 export async function getAdmins(req, res) {
+  const { roles } = req;
+
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
     const Admins = await prisma.User.findMany({
       select: {
         id: true,
@@ -238,9 +246,13 @@ export async function changeAdmin(req, res) {
 }
 
 export async function updateProjectsAndRoles(req, res) {
-  const { userId, projectIds, roleIds } = req.body;
+  const { email, userId, projectIds, roleIds } = req.body;
+
+  const { roles } = req;
 
   try {
+    if (!hasRoles(roles, ["ADMINTOOL", "ADMINLEAD"]))
+      return res.sendStatus(401);
     await prisma.user.update({
       where: { id: userId },
       data: {
@@ -265,6 +277,10 @@ export async function updateProjectsAndRoles(req, res) {
       },
     });
 
+    const user = await getRolesFromUser(email);
+    const token = generateToken(email, user.roles);
+    await saveTokenIntoDB({ email: email, token: token });
+
     return res.json({ success: true });
   } catch (err) {
     console.log(err);
@@ -276,7 +292,10 @@ export async function updateProjectsAndRoles(req, res) {
 
 export async function deleteUser(req, res) {
   const { id } = req.params;
+  const { roles } = req;
+
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
     const deleteUser = await prisma.User.delete({
       where: { id: Number(id) },
     });

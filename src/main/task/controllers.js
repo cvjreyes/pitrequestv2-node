@@ -1,26 +1,41 @@
 import { PrismaClient } from "@prisma/client";
+import hasRoles from "../../helpers/auth.js";
 
 const prisma = new PrismaClient();
 
 export async function getOneTask(req, res) {
-  const { id } = req.params;
+  const { roles } = req;
 
-  let tId = 0;
+  try {
+    if (!hasRoles(roles, ["ADMINTOOL", "ADMINLEAD"]))
+      return res.sendStatus(401);
+    const { id } = req.params;
 
-  if (id && !isNaN(Number(id))) {
-    tId = Number(id);
+    let tId = 0;
+
+    if (id && !isNaN(Number(id))) {
+      tId = Number(id);
+    }
+
+    const getTask = await prisma.Task.findUnique({
+      where: { id: tId },
+    });
+
+    res.json(getTask);
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while getting the Task" });
   }
-
-  const getTask = await prisma.Task.findUnique({
-    where: { id: tId },
-  });
-
-  res.json(getTask);
 }
 
 export async function createTask(req, res) {
   const { name, softwareId } = req.body;
+  const { roles } = req;
+
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
     const newTask = await prisma.Task.create({
       data: {
         name,
@@ -39,7 +54,10 @@ export async function createTask(req, res) {
 export async function updateTask(req, res) {
   const { id } = req.params;
   const { name } = req.body;
+  const { roles } = req;
+
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
     const newTask = await prisma.Task.update({
       data: {
         name,
@@ -57,7 +75,10 @@ export async function updateTask(req, res) {
 
 export async function deleteTask(req, res) {
   const { id } = req.params;
+  const { roles } = req;
+
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
     const deleteTask = await prisma.Task.delete({
       where: { id: Number(id) },
     });

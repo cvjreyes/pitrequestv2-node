@@ -6,15 +6,13 @@ import {
   getAll,
   getAllProjectsAndRolesFromUsers,
   getProjectsAndRolesFromUser,
-  getRolesFromUser,
-  updateProjectsAndRoles,
+  updateProjectsAndRoles
 } from "./controllers.js";
 
 const router = express.Router();
 
 router.get("/", getAll);
 router.get("/projects/roles", getAllProjectsAndRolesFromUsers);
-router.get("/:id/roles", getRolesFromUser);
 router.get("/:id/projects/roles", getProjectsAndRolesFromUser);
 router.get("/admins", getAdmins);
 

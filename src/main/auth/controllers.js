@@ -75,7 +75,7 @@ export async function login(req, res) {
         link: link,
       });
       if (ok) {
-        return res.json(`Email ${email} registered successfully`);
+        return res.json(`Email ${email} logged successfully`);
       } else throw new Error("Sending email failed");
     } else {
       return res.status(401).json(`Email ${email} doesn't exist`);
@@ -90,7 +90,6 @@ export async function login(req, res) {
 
 export async function validateCredentials(req, res) {
   const { user_id, token } = req.body;
-  console.log(token);
   try {
     const user = await getUserById(Number(user_id));
     if (!user) return res.status(401).json("Link invalid");

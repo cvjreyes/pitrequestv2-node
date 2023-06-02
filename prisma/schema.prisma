@@ -21,7 +21,6 @@ model User {
   ProjectSoftwares ProjectSoftwares[]
   Project          Project[]
   ProjectUsers     ProjectUsers[]
-
 }
 
 model Role {
@@ -42,7 +41,7 @@ model UsersRole {
   userId Int
   roleId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id])
 
   @@unique([userId, roleId])
 }
@@ -76,7 +75,7 @@ model Project {
   code             String
   estimatedHours   Float
   userProjectId    Int
-  userProject      User               @relation(fields: [userProjectId], references: [id], onDelete: Cascade)
+  userProject      User               @relation(fields: [userProjectId], references: [id])
   Charter          Charter[]
   ProjectSoftwares ProjectSoftwares[]
   ProjectUsers     ProjectUsers[]
@@ -105,7 +104,7 @@ model ProjectUsers {
   id        Int     @id @default(autoincrement())
   userId    Int
   projectId Int
-  User      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User      User    @relation(fields: [userId], references: [id])
   Project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])

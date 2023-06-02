@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import hasRoles from "../../helpers/auth.js";
 
 const prisma = new PrismaClient();
 
@@ -48,21 +49,32 @@ export async function getUnselectedSoftware(req, res) {
 }
 
 export async function getSoftwareTree(req, res) {
-  const SoftwareTree = await prisma.Software.findMany({
-    include: {
-      Task: {
-        include: {
-          Subtask: true,
+  const { roles } = req;
+  try {
+    if (!hasRoles(roles, ["ADMINTOOL", "ADMINLEAD"]))
+      return res.sendStatus(401);
+
+    const SoftwareTree = await prisma.Software.findMany({
+      include: {
+        Task: {
+          include: {
+            Subtask: true,
+          },
         },
       },
-    },
-  });
-  res.json(SoftwareTree);
+    });
+    res.json(SoftwareTree);
+  } catch (err) {
+    res.status(500).json(err);
+  }
 }
 
 export async function createSoftware(req, res) {
   const { name, code } = req.body;
+  const { roles } = req;
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+
     const newSoftware = await prisma.Software.create({
       data: {
         name,
@@ -82,7 +94,10 @@ export async function createSoftware(req, res) {
 export async function updateSoftware(req, res) {
   const { id } = req.params;
   const { name, code } = req.body;
+  const { roles } = req;
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+
     const newSoftware = await prisma.Software.update({
       data: {
         name,
@@ -102,7 +117,10 @@ export async function updateSoftware(req, res) {
 
 export async function deleteSoftware(req, res) {
   const { id } = req.params;
+  const { roles } = req;
+
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
     const deleteSoftware = await prisma.Software.delete({
       where: { id: Number(id) },
     });
@@ -118,7 +136,10 @@ export async function deleteSoftware(req, res) {
 
 export async function removeSoftwareFromProject(req, res) {
   const { id, softwareId } = req.params;
+  const { roles } = req;
+
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
     const removeSoftware = await prisma.ProjectSoftwares.deleteMany({
       where: { projectId: Number(id), softwareId: Number(softwareId) },
     });
