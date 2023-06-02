@@ -14,13 +14,14 @@ model User {
   id               Int                @id @default(autoincrement())
   name             String
   email            String             @unique
-  token            String             @unique @db.VarChar(250)
+  token            String             @unique @db.VarChar(500)
   created_at       DateTime           @default(now())
   updated_at       DateTime           @default(now()) @updatedAt
   UsersRole        UsersRole[]
   ProjectSoftwares ProjectSoftwares[]
   Project          Project[]
   ProjectUsers     ProjectUsers[]
+
 }
 
 model Role {
@@ -30,7 +31,7 @@ model Role {
 }
 
 enum RoleName {
-  MATERIALS
+  USERLEAD
   ADMINTOOL
   ADMINLEAD
   USER

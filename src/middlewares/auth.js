@@ -1,16 +1,18 @@
-import Jwt from "jsonwebtoken";
-import * as dotenv from "dotenv";
-
-dotenv.config();
+import jwt from "jsonwebtoken";
 
 export async function checkAuth(req, res, next) {
-  const token = req.headers?.authorization;
-  if (!token) return res.status(401).json("Unauthorized token");
-  const verifyToken = token.split("!").join(".");
-  Jwt.verify(verifyToken, process.env.NODE_TOKEN_SECRET, (err, user) => {
-    if (err) return send(res, false, "Invalid token");
+  const authHeader = req.headers.authorization;
+  console.log("------------------")
+  console.log("Entra:",authHeader);
+  if (!authHeader?.startsWith("Bearer ")) return res.sendStatus(401);
+  const token = authHeader.split(" ")[1];
+  const token2 = token.split("!").join(".")
+  jwt.verify(token2, process.env.NODE_TOKEN_SECRET, (err, user) => {
+    if (err) return res.sendStatus(403);
+
     req.email = user.email;
     req.roles = user.roles;
+
     next();
   });
 }

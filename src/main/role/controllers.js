@@ -66,7 +66,9 @@ export async function createRoles(req, res) {
 
 export async function addRoleToUser(req, res) {
   const { userId, roleId } = req.body;
+  const { roles } = req;
   try {
+    if (!roles.includes("ADMINLEAD")) return res.sendStatus(401);
     const addRole = await prisma.UsersRole.createMany({
       data: {
         userId: Number(userId),

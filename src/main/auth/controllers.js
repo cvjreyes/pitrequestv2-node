@@ -90,6 +90,7 @@ export async function login(req, res) {
 
 export async function validateCredentials(req, res) {
   const { user_id, token } = req.body;
+  console.log(token);
   try {
     const user = await getUserById(Number(user_id));
     if (!user) return res.status(401).json("Link invalid");
