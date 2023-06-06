@@ -36,6 +36,16 @@ export async function createSubTask(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+
+    // Verificar si la task existe
+    const existingTask = await prisma.Task.findUnique({
+      where: { id: Number(taskId) },
+    });
+
+    if (!existingTask) {
+      return res.status(400).json({ error: "Task has been deleted" });
+    }
+
     const newSubtask = await prisma.Subtask.create({
       data: {
         name,
@@ -58,6 +68,16 @@ export async function updateSubTask(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+    
+    // Verificar si la subtask existe
+    const existingSubtask = await prisma.Subtask.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingSubtask) {
+      return res.status(400).json({ error: "Subtask has been deleted" });
+    }
+
     const newSubtask = await prisma.Subtask.update({
       data: {
         name,
@@ -79,6 +99,16 @@ export async function deleteSubtask(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+    
+    // Verificar si la task existe
+    const existingSubtask = await prisma.Subtask.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingSubtask) {
+      return res.status(400).json({ error: "Subtask already deleted" });
+    }
+
     const deleteSubtask = await prisma.Subtask.delete({
       where: { id: Number(id) },
     });

@@ -98,6 +98,15 @@ export async function updateSoftware(req, res) {
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
 
+    // Verificar si la software existe
+    const existingSoftware = await prisma.Software.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingSoftware) {
+      return res.status(400).json({ error: "Software has been deleted" });
+    }
+
     const newSoftware = await prisma.Software.update({
       data: {
         name,
@@ -121,6 +130,16 @@ export async function deleteSoftware(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+    
+    // Verificar si el software existe
+    const existingSoftware = await prisma.Software.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingSoftware) {
+      return res.status(400).json({ error: "Software already deleted" });
+    }
+    
     const deleteSoftware = await prisma.Software.delete({
       where: { id: Number(id) },
     });

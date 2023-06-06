@@ -289,22 +289,52 @@ export async function updateProjectsAndRoles(req, res) {
       .json({ error: "An error occurred while updating user data" });
   }
 }
-
 export async function deleteUser(req, res) {
   const { id } = req.params;
   const { roles } = req;
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+
+    // Verificar si el usuario existe
+    const existingUser = await prisma.User.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingUser) {
+      return res.status(400).json({ error: "User already deleted" });
+    }
+
+    // Eliminar registros relacionados en la tabla `UsersRole`
+    await prisma.UsersRole.deleteMany({
+      where: {
+        userId: Number(id),
+      },
+    });
+
+    // Eliminar registros relacionados en la tabla `ProjectSoftwares`
+    await prisma.ProjectSoftwares.deleteMany({
+      where: {
+        adminId: Number(id),
+      },
+    });
+
+    // Eliminar registros relacionados en la tabla `ProjectUsers`
+    await prisma.ProjectUsers.deleteMany({
+      where: {
+        userId: Number(id),
+      },
+    });
+
+    // Finalmente, eliminar el usuario en la tabla `User`
     const deleteUser = await prisma.User.delete({
       where: { id: Number(id) },
     });
 
     return res.json({ deleteUser });
   } catch (err) {
-    console.log(err);
     return res
       .status(500)
-      .json({ error: "An error occurred while deleting the Task" });
+      .json({ error: "An error occurred while deleting the User" });
   }
 }

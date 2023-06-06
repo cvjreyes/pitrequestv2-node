@@ -19,13 +19,13 @@ export async function signin(req, res) {
   try {
     if (!email) return res.status(404).json("Please, fill all fields");
     const validatedEmail = validator.validate(email);
-    if (!validatedEmail) return res.status(401).json("Invalid credentials");
+    if (!validatedEmail) return res.sendStatus(401).json("Invalid credentials");
     let user = await getRolesFromUser(email);
     if (!user) {
       const regex = /technipenergies.com$/;
       if (!regex.exec(email))
         return res
-          .status(401)
+          .status(404)
           .json("Your email must belong to Technip Energies");
       const token = generateToken(email, "USER");
       const name = getName(email);

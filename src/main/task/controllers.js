@@ -36,6 +36,16 @@ export async function createTask(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+    
+    // Verificar si la software existe
+    const existingSoftware = await prisma.Software.findUnique({
+      where: { id: Number(softwareId) },
+    });
+
+    if (!existingSoftware) {
+      return res.status(400).json({ error: "Software has been deleted" });
+    }
+
     const newTask = await prisma.Task.create({
       data: {
         name,
@@ -58,6 +68,16 @@ export async function updateTask(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+    
+    // Verificar si la software existe
+    const existingTask = await prisma.Task.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingTask) {
+      return res.status(400).json({ error: "Task has been deleted" });
+    }
+
     const newTask = await prisma.Task.update({
       data: {
         name,
@@ -79,6 +99,16 @@ export async function deleteTask(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+
+    // Verificar si la task existe
+    const existingTask = await prisma.Task.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingTask) {
+      return res.status(400).json({ error: "Task already deleted" });
+    }
+
     const deleteTask = await prisma.Task.delete({
       where: { id: Number(id) },
     });
