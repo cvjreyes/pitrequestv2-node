@@ -219,13 +219,32 @@ export async function getUserById(id) {
   return { ...getUserByID, roles };
 }
 
-export async function changeAdmin(req, res) {
+export async function actionsAdmin(req, res) {
   const { softwareId, projectId, adminId } = req.params;
   const { newAdminId } = req.body;
+  const { roles } = req;
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+
+    // Verificar si el software existe en el proyecto
+    const existingSoftwareInProject = await prisma.ProjectSoftwares.findUnique({
+      where: {
+        projectId_adminId_softwareId: {
+          projectId: Number(projectId),
+          adminId: Number(adminId),
+          softwareId: Number(softwareId),
+        },
+      },
+    });
+    if (!existingSoftwareInProject) {
+      return res
+        .status(400)
+        .json({ error: "Software or Admin has been removed already from this project" });
+    }
+
     const updatedSoftware = await prisma.ProjectSoftwares.update({
       data: {
-        adminId: Number(newAdminId), // Convertir a número entero
+        adminId: newAdminId ? Number(newAdminId) : null, // Convertir a número entero
       },
       where: {
         projectId_adminId_softwareId: {

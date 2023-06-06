@@ -36,6 +36,16 @@ export async function createCharter(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+    
+    // Verificar si el project existe
+    const existingProject = await prisma.Project.findUnique({
+      where: { id: Number(projectId) },
+    });
+
+    if (!existingProject) {
+      return res.status(400).json({ error: "Project has been deleted" });
+    }
+
     const newCharter = await prisma.Charter.create({
       data: {
         name,
@@ -59,6 +69,16 @@ export async function updateCharter(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+    
+    // Verificar si el charter existe
+    const existingCharter = await prisma.Charter.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingCharter) {
+      return res.status(400).json({ error: "Charter has been deleted" });
+    }
+
     const newCharter = await prisma.Charter.update({
       data: {
         name,
@@ -81,6 +101,16 @@ export async function deleteCharter(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+    
+    // Verificar si el charter existe
+    const existingCharter = await prisma.Charter.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingCharter) {
+      return res.status(400).json({ error: "Charter already deleted" });
+    }
+
     const deleteCharter = await prisma.Charter.delete({
       where: { id: Number(id) },
     });
