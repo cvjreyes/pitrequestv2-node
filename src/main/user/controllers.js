@@ -237,9 +237,9 @@ export async function actionsAdmin(req, res) {
       },
     });
     if (!existingSoftwareInProject) {
-      return res
-        .status(400)
-        .json({ error: "Software or Admin has been removed already from this project" });
+      return res.status(400).json({
+        error: "Software or Admin has been removed already from this project",
+      });
     }
 
     const updatedSoftware = await prisma.ProjectSoftwares.update({

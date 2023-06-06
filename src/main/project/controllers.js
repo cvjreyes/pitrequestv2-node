@@ -130,45 +130,6 @@ export async function getOneProject(req, res) {
   }
 }
 
-// export async function getAdminAndSoftwareFromProject(req, res) {
-//   const { roles } = req;
-
-//   try {
-//     if (!hasRoles(roles, ["ADMINTOOL", "ADMINLEAD"]))
-//       return res.sendStatus(401);
-//     const { adminId, softwareId, projectId } = req.params;
-
-//     let pId = 0;
-//     let sId = 0;
-//     let aId = 0;
-
-//     if (projectId && !isNaN(parseInt(projectId))) {
-//       pId = parseInt(projectId);
-//     }
-//     if (softwareId && !isNaN(parseInt(softwareId))) {
-//       sId = parseInt(softwareId);
-//     }
-//     if (adminId && !isNaN(parseInt(adminId))) {
-//       aId = parseInt(adminId);
-//     }
-//     const getAdminSoftwares = await prisma.ProjectSoftwares.findMany({
-//       where: {
-//         adminId: aId,
-//         softwareId: sId,
-//         projectId: pId,
-//       },
-//       select: { id: true },
-//     });
-//     res.json(getAdminSoftwares);
-//   } catch (err) {
-//     console.log(err);
-//     return res.status(500).json({
-//       error:
-//         "An error occurred while getting an Admin and Software from Project",
-//     });
-//   }
-// }
-
 export async function createProject(req, res) {
   const { name, code, estimatedHours, userProjectId } = req.body;
   const { roles } = req;
@@ -224,12 +185,28 @@ export async function addSoftwareAndAdminToProject(req, res) {
       where: { id: Number(adminId) },
     });
 
+    // Verificar si el software existe en el proyecto
+    const existingSoftwareAndAdminInProject =
+      await prisma.ProjectSoftwares.findUnique({
+        where: {
+          projectId_adminId_softwareId: {
+            projectId: Number(projectId),
+            adminId: Number(adminId),
+            softwareId: Number(softwareId),
+          },
+        },
+      });
+
     if (!existingProject) {
       return res.status(400).json({ error: "Project has been deleted" });
     } else if (!existingSoftware) {
       return res.status(400).json({ error: "Software has been deleted" });
     } else if (!existingUser) {
       return res.status(400).json({ error: "Admin has been removed" });
+    } else if (existingSoftwareAndAdminInProject) {
+      return res
+        .status(400)
+        .json({ error: "Admin and Software already exist" });
     }
 
     const newSoftwareProject = await prisma.ProjectSoftwares.create({
@@ -275,7 +252,7 @@ export async function updateProject(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
-    
+
     // Verificar si el project existe
     const existingProject = await prisma.Project.findUnique({
       where: { id: Number(id) },
@@ -309,7 +286,7 @@ export async function deleteProject(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
-    
+
     // Verificar si el project existe
     const existingProject = await prisma.Project.findUnique({
       where: { id: Number(id) },
