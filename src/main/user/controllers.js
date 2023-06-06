@@ -272,6 +272,16 @@ export async function updateProjectsAndRoles(req, res) {
   try {
     if (!hasRoles(roles, ["ADMINTOOL", "ADMINLEAD"]))
       return res.sendStatus(401);
+
+    // Verificar si el usuario existe
+    const existingUser = await prisma.User.findUnique({
+      where: { id: Number(userId) },
+    });
+
+    if (!existingUser) {
+      return res.status(400).json({ error: "User has been deleted" });
+    }
+
     await prisma.user.update({
       where: { id: userId },
       data: {
