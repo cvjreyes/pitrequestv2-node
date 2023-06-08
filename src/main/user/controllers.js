@@ -264,9 +264,16 @@ export async function actionsAdmin(req, res) {
   }
 }
 
+function arraysEqual(arr1, arr2) {
+  if (arr1.length !== arr2.length) return false;
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) return false;
+  }
+  return true;
+}
+
 export async function updateProjectsAndRoles(req, res) {
   const { email, userId, projectIds, roleIds } = req.body;
-
   const { roles } = req;
 
   try {
@@ -281,6 +288,15 @@ export async function updateProjectsAndRoles(req, res) {
     if (!existingUser) {
       return res.status(400).json({ error: "User has been deleted" });
     }
+
+    // Verificar si se modificaron los roles
+    const existingUserRoles = await prisma.UsersRole.findMany({
+      where: { userId: Number(userId) },
+      select: { roleId: true },
+    });
+
+    const existingRoleIds = existingUserRoles.map((userRole) => userRole.roleId);
+    const isRoleModified = !arraysEqual(existingRoleIds, roleIds);
 
     await prisma.user.update({
       where: { id: userId },
@@ -306,9 +322,11 @@ export async function updateProjectsAndRoles(req, res) {
       },
     });
 
-    const user = await getRolesFromUser(email);
-    const token = generateToken(email, user.roles);
-    await saveTokenIntoDB({ email: email, token: token });
+    if (isRoleModified) {
+      const user = await getRolesFromUser(email);
+      const token = generateToken(email, user.roles);
+      await saveTokenIntoDB({ email: email, token: token });
+    }
 
     return res.json({ success: true });
   } catch (err) {
@@ -318,6 +336,7 @@ export async function updateProjectsAndRoles(req, res) {
       .json({ error: "An error occurred while updating user data" });
   }
 }
+
 export async function deleteUser(req, res) {
   const { id } = req.params;
   const { roles } = req;
