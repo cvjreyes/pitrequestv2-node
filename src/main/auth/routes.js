@@ -10,6 +10,7 @@ import { checkAuth } from "../../middlewares/auth.js";
 const router = express.Router();
 
 router.get("/user", checkAuth, getUserInfo);
+router.get("/user/:id/check-token", checkAuth, getUserInfo);
 
 router.post("/signin", signin);
 router.post("/validate-credentials", validateCredentials);

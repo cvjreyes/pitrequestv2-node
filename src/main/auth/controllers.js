@@ -14,6 +14,33 @@ import { getRolesFromUser, getUserById } from "../user/controllers.js";
 
 const prisma = new PrismaClient();
 
+export async function getUserInfo(req, res) {
+  const { email } = req;
+  try {
+    if (!email) return res.status(401).json("Invalid token 1");
+    const user = await getRolesFromUser(email);
+    if (!user) return res.status(401).json("Invalid token 2");
+    return res.json({ user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "An error occurred with credentials" });
+  }
+}
+
+export async function getUserToken(req, res) {
+  const { id } = req.params;
+  try {
+    const userToken = await prisma.User.findUnique({
+      select: { token: true },
+      where: { id: Number(id) },
+    });
+    return res.json({ userToken });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "An error occurred with finding the token" });
+  }
+}
+
 export async function signin(req, res) {
   const { email } = req.body;
   try {
@@ -103,18 +130,5 @@ export async function validateCredentials(req, res) {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "An error occurred while login" });
-  }
-}
-
-export async function getUserInfo(req, res) {
-  const { email } = req;
-  try {
-    if (!email) return res.status(401).json("Invalid token 1");
-    const user = await getRolesFromUser(email);
-    if (!user) return res.status(401).json("Invalid token 2");
-    return res.json({ user });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "An error occurred with credentials" });
   }
 }
