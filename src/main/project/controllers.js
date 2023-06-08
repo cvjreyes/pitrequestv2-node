@@ -262,12 +262,28 @@ export async function updateProject(req, res) {
       return res.status(400).json({ error: "Project has been deleted" });
     }
 
+    // Crear un objeto con los campos a actualizar
+    const updateData = {};
+
+    if (name !== undefined) {
+      updateData.name = name;
+    }
+
+    if (code !== undefined) {
+      updateData.code = code;
+    }
+
+    if (estimatedHours !== undefined) {
+      updateData.estimatedHours = parseFloat(estimatedHours);
+    }
+
+    // Verificar si hay campos a actualizar
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({ error: "No valid fields to update" });
+    }
+
     const newProject = await prisma.Project.update({
-      data: {
-        name,
-        code,
-        estimatedHours: parseFloat(estimatedHours),
-      },
+      data: updateData,
       where: { id: Number(id) },
     });
 
@@ -276,7 +292,7 @@ export async function updateProject(req, res) {
     console.log(err);
     return res
       .status(500)
-      .json({ error: "An error occurred while creating the Project" });
+      .json({ error: "An error occurred while updating the Project" });
   }
 }
 
