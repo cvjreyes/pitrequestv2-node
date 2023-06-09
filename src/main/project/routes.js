@@ -3,7 +3,7 @@ import {
   getUnselectedSoftware,
   removeSoftwareFromProject,
 } from "../software/controllers.js";
-import { actionsAdmin, getUnassignedAdmins } from "../user/controllers.js";
+import { actionsAdmin, getUnassignedAdmins, removeAdmin } from "../user/controllers.js";
 import {
   addSoftwareAndAdminToProject,
   createProject,
@@ -30,5 +30,6 @@ router.put("/:projectId/softwares/:softwareId/admins/:adminId", actionsAdmin);
 
 router.delete("/:id", deleteProject);
 router.delete("/:id/softwares/:softwareId", removeSoftwareFromProject);
+router.delete("/:projectId/softwares/:softwareId/admins/:adminId", removeAdmin);
 
 export default router;

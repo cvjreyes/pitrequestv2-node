@@ -426,3 +426,44 @@ export async function deleteUser(req, res) {
       .json({ error: "An error occurred while deleting the User" });
   }
 }
+
+export async function removeAdmin(req, res) {
+  const { softwareId, projectId, adminId } = req.params;
+  const { roles } = req;
+  try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+
+    // Verificar si el software existe en el proyecto
+    const existingSoftwareInProject = await prisma.ProjectSoftwares.findUnique({
+      where: {
+        projectId_adminId_softwareId: {
+          projectId: Number(projectId),
+          adminId: Number(adminId),
+          softwareId: Number(softwareId),
+        },
+      },
+    });
+    if (!existingSoftwareInProject) {
+      return res.status(400).json({
+        error: "Software or Admin has been removed already from this project",
+      });
+    }
+
+    const deleteAdmin = await prisma.ProjectSoftwares.delete({
+      where: {
+        projectId_adminId_softwareId: {
+          projectId: Number(projectId),
+          adminId: Number(adminId),
+          softwareId: Number(softwareId),
+        },
+      },
+    });
+
+    return res.json({ deleteAdmin });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while removing the Admin" });
+  }
+}

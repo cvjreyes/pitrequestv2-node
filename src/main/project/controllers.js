@@ -209,12 +209,19 @@ export async function addSoftwareAndAdminToProject(req, res) {
         .json({ error: "Admin and Software already exist" });
     }
 
-    const newSoftwareProject = await prisma.ProjectSoftwares.create({
-      data: {
-        projectId: Number(projectId),
-        adminId: Number(adminId),
-        softwareId: Number(softwareId),
-      },
+    const newSoftwareProject = await prisma.ProjectSoftwares.createMany({
+      data: [
+        {
+          projectId: Number(projectId),
+          adminId: null,
+          softwareId: Number(softwareId),
+        },
+        {
+          projectId: Number(projectId),
+          adminId: Number(adminId),
+          softwareId: Number(softwareId),
+        },
+      ],
     });
 
     // Verificar si el usuario ya está asignado al proyecto
