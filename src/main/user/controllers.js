@@ -264,7 +264,10 @@ export async function actionsAdmin(req, res) {
   }
 }
 
-function arraysEqual(arr1, arr2) {
+// Esto podria ir al helpers
+function rolesEqual(arr1, arr2) {
+  arr1.sort();
+  arr2.sort();
   if (arr1.length !== arr2.length) return false;
   for (let i = 0; i < arr1.length; i++) {
     if (arr1[i] !== arr2[i]) return false;
@@ -289,14 +292,25 @@ export async function updateProjectsAndRoles(req, res) {
       return res.status(400).json({ error: "User has been deleted" });
     }
 
-    // Verificar si se modificaron los roles
+    // Verificar si se modificaron los roles, no recoje el role USER
     const existingUserRoles = await prisma.UsersRole.findMany({
-      where: { userId: Number(userId) },
-      select: { roleId: true },
+      where: {
+        userId: Number(userId),
+        NOT: {
+          role: {
+            name: "USER",
+          },
+        },
+      },
+      include: { role: true },
     });
 
-    const existingRoleIds = existingUserRoles.map((userRole) => userRole.roleId);
-    const isRoleModified = !arraysEqual(existingRoleIds, roleIds);
+    const existingRoleIds = existingUserRoles.map(
+      (userRole) => userRole.roleId
+    );
+
+    // Comprueba que los dos arrays de ids de los roles son iguales comprobando su length y su id
+    const isRoleModified = !rolesEqual(existingRoleIds, roleIds);
 
     await prisma.user.update({
       where: { id: userId },
@@ -322,6 +336,32 @@ export async function updateProjectsAndRoles(req, res) {
       },
     });
 
+    // Recoje todos los projects Id del usuario que hay en la tabla de userProjects
+    const userProjects = await prisma.ProjectUsers.findMany({
+      where: {
+        userId: Number(userId),
+      },
+      select: {
+        projectId: true,
+      },
+    });
+
+    const userProjectIds = userProjects.map((project) => project.projectId);
+
+    // Convierte en nulo los adminId los projectos que no encontro en la query anterior y asi los elimina de la carpeta admin
+    await prisma.ProjectSoftwares.updateMany({
+      where: {
+        adminId: Number(userId),
+        projectId: {
+          notIn: userProjectIds,
+        },
+      },
+      data: {
+        adminId: null,
+      },
+    });
+
+    // Si se han modificado los roles se le cambia el token a ese usuario
     if (isRoleModified) {
       const user = await getRolesFromUser(email);
       const token = generateToken(email, user.roles);
