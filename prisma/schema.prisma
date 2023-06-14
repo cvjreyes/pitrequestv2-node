@@ -21,6 +21,8 @@ model User {
   ProjectSoftwares ProjectSoftwares[]
   Project          Project[]
   ProjectUsers     ProjectUsers[]
+  TicketRaisedBy   Ticket[]           @relation("RaisedByUser")
+  TicketAdmin      Ticket[]           @relation("AdminUser")
 }
 
 model Role {
@@ -52,6 +54,7 @@ model Software {
   code             String
   Task             Task[]
   ProjectSoftwares ProjectSoftwares[]
+  Ticket           Ticket[]
 }
 
 model Task {
@@ -79,6 +82,7 @@ model Project {
   Charter          Charter[]
   ProjectSoftwares ProjectSoftwares[]
   ProjectUsers     ProjectUsers[]
+  Ticket           Ticket[]
 }
 
 model Charter {
@@ -108,4 +112,46 @@ model ProjectUsers {
   Project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])
+}
+
+model Ticket {
+  id                Int                 @id @default(autoincrement())
+  code              String              @unique
+  raisedBy          Int
+  projectId         Int
+  softwareId        Int
+  adminId           Int
+  subject           String
+  description       String
+  statusId          Int
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @default(now()) @updatedAt
+  closed_at         DateTime            @default(now()) @updatedAt
+  User              User                @relation("RaisedByUser", fields: [raisedBy], references: [id])
+  Project           Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  Software          Software            @relation(fields: [softwareId], references: [id], onDelete: Cascade)
+  Admin             User                @relation("AdminUser", fields: [adminId], references: [id])
+  Status            Status              @relation(fields: [statusId], references: [id], onDelete: Cascade)
+  TicketsAttachment TicketsAttachment[]
+}
+
+model TicketsAttachment {
+  id       Int    @id @default(autoincrement())
+  ticketId Int
+  url      String
+  Ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+}
+
+model Status {
+  id     Int        @id @default(autoincrement())
+  name   StatusName @unique @default(PENDING)
+  Ticket Ticket[]
+}
+
+enum StatusName {
+  PENDING
+  IN_PROGRESS
+  REASSIGNED
+  READY
+  REJECTED
 }

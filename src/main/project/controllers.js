@@ -19,6 +19,20 @@ export async function getAll(req, res) {
   }
 }
 
+export async function getAllNames(req, res) {
+  try {
+    const Projects = await prisma.Project.findMany({
+      select: { id: true, name: true },
+    });
+    return res.json({ Projects });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while getting the Projects" });
+  }
+}
+
 export async function getProjectTree(req, res) {
   const { roles } = req;
 

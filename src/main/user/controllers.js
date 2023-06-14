@@ -58,6 +58,50 @@ export async function getUnassignedAdmins(req, res) {
   }
 }
 
+export async function getAssignedAdmins(req, res) {
+  const { id, softwareId } = req.params;
+
+  try {
+    let pId = 0;
+    let sId = 0;
+
+    if (id && !isNaN(parseInt(id))) {
+      pId = parseInt(id);
+    }
+    if (softwareId && !isNaN(parseInt(softwareId))) {
+      sId = parseInt(softwareId);
+    }
+
+    const admins = await prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+      where: {
+        UsersRole: {
+          some: {
+            role: {
+              name: "ADMINTOOL",
+            },
+          },
+        },
+        ProjectSoftwares: {
+          some: {
+            projectId: pId,
+            softwareId: sId,
+          },
+        },
+      },
+    });
+
+    return res.json({ admins });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
 export async function getAdmins(req, res) {
   const { roles } = req;
 
@@ -113,7 +157,7 @@ export async function getRolesFromUser(email) {
 
 export async function getAllProjectsAndRolesFromUsers(req, res) {
   try {
-    const users = await prisma.user.findMany({
+    const users = await prisma.User.findMany({
       select: {
         id: true,
         name: true,

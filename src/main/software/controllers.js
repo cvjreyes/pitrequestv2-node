@@ -48,6 +48,28 @@ export async function getUnselectedSoftware(req, res) {
   res.json(unselectedSoftwares);
 }
 
+export async function getSelectedSoftware(req, res) {
+  const { id } = req.params;
+
+  let pId = 0;
+
+  if (id && !isNaN(parseInt(id))) {
+    pId = parseInt(id);
+  }
+  // Obtener los IDs de los softwares seleccionados en el proyecto
+  const selectedSoftwareIds = await prisma.ProjectSoftwares.findMany({
+    where: { projectId: pId },
+    select: { softwareId: true },
+  });
+
+  // Obtener todos los softwares que no están seleccionados en el proyecto
+  const unselectedSoftwares = await prisma.Software.findMany({
+    where: { id: { in: selectedSoftwareIds.map((item) => item.softwareId) } },
+  });
+
+  res.json(unselectedSoftwares);
+}
+
 export async function getSoftwareTree(req, res) {
   const { roles } = req;
   try {

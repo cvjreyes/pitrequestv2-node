@@ -13,6 +13,8 @@ import softwareRouter from "./src/main/software/routes.js";
 import subtaskRouter from "./src/main/subtask/routes.js";
 import taskRouter from "./src/main/task/routes.js";
 
+import ticketRouter from "./src/main/ticket/routes.js";
+
 import { checkAuth } from "./src/middlewares/auth.js";
 
 import * as dotenv from "dotenv";
@@ -41,6 +43,8 @@ app.use("/charters", checkAuth, charterRouter);
 app.use("/softwares", checkAuth, softwareRouter);
 app.use("/tasks", checkAuth, taskRouter);
 app.use("/subtasks", checkAuth, subtaskRouter);
+
+app.use("/tickets", checkAuth, ticketRouter);
 
 // 404 HANDLING
 app.use("*", (req, res) => {
