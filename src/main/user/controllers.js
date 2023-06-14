@@ -1,4 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+import hasRoles from "../../helpers/auth.js";
+import { generateToken, saveTokenIntoDB } from "../../helpers/token.js";
 
 const prisma = new PrismaClient();
 
@@ -8,8 +10,11 @@ export async function getAll(req, res) {
 }
 
 export async function getUnassignedAdmins(req, res) {
+  const { id, softwareId } = req.params;
+  const { roles } = req;
+
   try {
-    const { id, softwareId } = req.params;
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
 
     let pId = 0;
     let sId = 0;
@@ -28,9 +33,9 @@ export async function getUnassignedAdmins(req, res) {
         email: true,
       },
       where: {
-        UsersRol: {
+        UsersRole: {
           some: {
-            rol: {
+            role: {
               name: "ADMINTOOL",
             },
           },
@@ -54,7 +59,10 @@ export async function getUnassignedAdmins(req, res) {
 }
 
 export async function getAdmins(req, res) {
+  const { roles } = req;
+
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
     const Admins = await prisma.User.findMany({
       select: {
         id: true,
@@ -62,9 +70,9 @@ export async function getAdmins(req, res) {
         email: true,
       },
       where: {
-        UsersRol: {
+        UsersRole: {
           some: {
-            rol: {
+            role: {
               name: "ADMINTOOL",
             },
           },
@@ -89,12 +97,12 @@ export async function getRolesFromUser(email) {
       return null;
     }
 
-    const userRoles = await prisma.UsersRol.findMany({
+    const userRoles = await prisma.UsersRole.findMany({
       where: { userId: user.id },
-      include: { rol: true },
+      include: { role: true },
     });
 
-    const roles = userRoles.map((userRol) => userRol.rol.name);
+    const roles = userRoles.map((userRole) => userRole.role.name);
 
     return { ...user, roles };
   } catch (error) {
@@ -106,7 +114,11 @@ export async function getRolesFromUser(email) {
 export async function getAllProjectsAndRolesFromUsers(req, res) {
   try {
     const users = await prisma.user.findMany({
-      include: {
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        created_at: true,
         ProjectUsers: {
           select: {
             projectId: true,
@@ -119,9 +131,9 @@ export async function getAllProjectsAndRolesFromUsers(req, res) {
             },
           },
         },
-        UsersRol: {
+        UsersRole: {
           select: {
-            rol: {
+            role: {
               select: {
                 id: true,
                 name: true,
@@ -134,10 +146,11 @@ export async function getAllProjectsAndRolesFromUsers(req, res) {
 
     return res.json(users);
   } catch (error) {
-    res.status(500).json({ error: "An error occurred while getting the Users data table" });
+    res
+      .status(500)
+      .json({ error: "An error occurred while getting the Users data table" });
   }
 }
-
 
 export async function getProjectsAndRolesFromUser(req, res) {
   const { id } = req.params;
@@ -157,9 +170,9 @@ export async function getProjectsAndRolesFromUser(req, res) {
             },
           },
         },
-        UsersRol: {
+        UsersRole: {
           select: {
-            rol: {
+            role: {
               select: {
                 id: true,
                 name: true,
@@ -177,7 +190,7 @@ export async function getProjectsAndRolesFromUser(req, res) {
     const projects = user.ProjectUsers.map(
       (projectUser) => projectUser.Project
     );
-    const roles = user.UsersRol.map((userRol) => userRol.rol);
+    const roles = user.UsersRole.map((userRole) => userRole.role);
 
     return res.json({ projects, roles });
   } catch (error) {
@@ -196,23 +209,42 @@ export async function getUserById(id) {
     return null;
   }
 
-  const userRoles = await prisma.UsersRol.findMany({
+  const userRoles = await prisma.UsersRole.findMany({
     where: { userId: id },
-    include: { rol: true },
+    include: { role: true },
   });
 
-  const roles = userRoles.map((userRol) => userRol.rol.name);
+  const roles = userRoles.map((userRole) => userRole.role.name);
 
   return { ...getUserByID, roles };
 }
 
-export async function changeAdmin(req, res) {
+export async function actionsAdmin(req, res) {
   const { softwareId, projectId, adminId } = req.params;
   const { newAdminId } = req.body;
+  const { roles } = req;
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+
+    // Verificar si el software existe en el proyecto
+    const existingSoftwareInProject = await prisma.ProjectSoftwares.findUnique({
+      where: {
+        projectId_adminId_softwareId: {
+          projectId: Number(projectId),
+          adminId: Number(adminId),
+          softwareId: Number(softwareId),
+        },
+      },
+    });
+    if (!existingSoftwareInProject) {
+      return res.status(400).json({
+        error: "Software or Admin has been removed already from this project",
+      });
+    }
+
     const updatedSoftware = await prisma.ProjectSoftwares.update({
       data: {
-        adminId: Number(newAdminId), // Convertir a número entero
+        adminId: newAdminId ? Number(newAdminId) : null, // Convertir a número entero
       },
       where: {
         projectId_adminId_softwareId: {
@@ -229,5 +261,209 @@ export async function changeAdmin(req, res) {
     return res
       .status(500)
       .json({ error: "An error occurred while editing the Software" });
+  }
+}
+
+// Esto podria ir al helpers
+function rolesEqual(arr1, arr2) {
+  arr1.sort();
+  arr2.sort();
+  if (arr1.length !== arr2.length) return false;
+  for (let i = 0; i < arr1.length; i++) {
+    if (arr1[i] !== arr2[i]) return false;
+  }
+  return true;
+}
+
+export async function updateProjectsAndRoles(req, res) {
+  const { email, userId, projectIds, roleIds } = req.body;
+  const { roles } = req;
+
+  try {
+    if (!hasRoles(roles, ["ADMINTOOL", "ADMINLEAD"]))
+      return res.sendStatus(401);
+
+    // Verificar si el usuario existe
+    const existingUser = await prisma.User.findUnique({
+      where: { id: Number(userId) },
+    });
+
+    if (!existingUser) {
+      return res.status(400).json({ error: "User has been deleted" });
+    }
+
+    // Verificar si se modificaron los roles, no recoje el role USER
+    const existingUserRoles = await prisma.UsersRole.findMany({
+      where: {
+        userId: Number(userId),
+        NOT: {
+          role: {
+            name: "USER",
+          },
+        },
+      },
+      include: { role: true },
+    });
+
+    const existingRoleIds = existingUserRoles.map(
+      (userRole) => userRole.roleId
+    );
+
+    // Comprueba que los dos arrays de ids de los roles son iguales comprobando su length y su id
+    const isRoleModified = !rolesEqual(existingRoleIds, roleIds);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        ProjectUsers: {
+          deleteMany: {},
+          create: projectIds.map((projectId) => ({
+            projectId,
+          })),
+        },
+        UsersRole: {
+          deleteMany: {
+            NOT: {
+              roleId: {
+                in: 1,
+              },
+            },
+          },
+          create: roleIds.map((roleId) => ({
+            roleId,
+          })),
+        },
+      },
+    });
+
+    // Recoje todos los projects Id del usuario que hay en la tabla de userProjects
+    const userProjects = await prisma.ProjectUsers.findMany({
+      where: {
+        userId: Number(userId),
+      },
+      select: {
+        projectId: true,
+      },
+    });
+
+    const userProjectIds = userProjects.map((project) => project.projectId);
+
+    // Convierte en nulo los adminId los projectos que no encontro en la query anterior y asi los elimina de la carpeta admin
+    await prisma.ProjectSoftwares.updateMany({
+      where: {
+        adminId: Number(userId),
+        projectId: {
+          notIn: userProjectIds,
+        },
+      },
+      data: {
+        adminId: null,
+      },
+    });
+
+    // Si se han modificado los roles se le cambia el token a ese usuario
+    if (isRoleModified) {
+      const user = await getRolesFromUser(email);
+      const token = generateToken(email, user.roles);
+      await saveTokenIntoDB({ email: email, token: token });
+    }
+
+    return res.json({ success: true });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while updating user data" });
+  }
+}
+
+export async function deleteUser(req, res) {
+  const { id } = req.params;
+  const { roles } = req;
+
+  try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+
+    // Verificar si el usuario existe
+    const existingUser = await prisma.User.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingUser) {
+      return res.status(400).json({ error: "User already deleted" });
+    }
+
+    // Eliminar registros relacionados en la tabla `UsersRole`
+    await prisma.UsersRole.deleteMany({
+      where: {
+        userId: Number(id),
+      },
+    });
+
+    // Eliminar registros relacionados en la tabla `ProjectSoftwares`
+    await prisma.ProjectSoftwares.deleteMany({
+      where: {
+        adminId: Number(id),
+      },
+    });
+
+    // Eliminar registros relacionados en la tabla `ProjectUsers`
+    await prisma.ProjectUsers.deleteMany({
+      where: {
+        userId: Number(id),
+      },
+    });
+
+    // Finalmente, eliminar el usuario en la tabla `User`
+    const deleteUser = await prisma.User.delete({
+      where: { id: Number(id) },
+    });
+
+    return res.json({ deleteUser });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: "An error occurred while deleting the User" });
+  }
+}
+
+export async function removeAdmin(req, res) {
+  const { softwareId, projectId, adminId } = req.params;
+  const { roles } = req;
+  try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+
+    // Verificar si el software existe en el proyecto
+    const existingSoftwareInProject = await prisma.ProjectSoftwares.findUnique({
+      where: {
+        projectId_adminId_softwareId: {
+          projectId: Number(projectId),
+          adminId: Number(adminId),
+          softwareId: Number(softwareId),
+        },
+      },
+    });
+    if (!existingSoftwareInProject) {
+      return res.status(400).json({
+        error: "Software or Admin has been removed already from this project",
+      });
+    }
+
+    const deleteAdmin = await prisma.ProjectSoftwares.delete({
+      where: {
+        projectId_adminId_softwareId: {
+          projectId: Number(projectId),
+          adminId: Number(adminId),
+          softwareId: Number(softwareId),
+        },
+      },
+    });
+
+    return res.json({ deleteAdmin });
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while removing the Admin" });
   }
 }

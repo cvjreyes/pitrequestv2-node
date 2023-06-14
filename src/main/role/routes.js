@@ -1,11 +1,15 @@
 import express from "express";
-import { createRoles, getAll } from "./controllers.js";
+import {
+  createRoles,
+  getAllRoles,
+  getRolesWithoutUser,
+} from "./controllers.js";
 
 const router = express.Router();
 
-router.get("/", getAll);
+router.get("/", getAllRoles);
+router.get("/noUser", getRolesWithoutUser);
 
 router.post("/", createRoles);
 
 export default router;
-

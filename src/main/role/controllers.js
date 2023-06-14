@@ -2,26 +2,30 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function getAll(req, res) {
-  const roles = await prisma.Rol.findMany({
-    select: {
-      name: true,
+export async function getAllRoles(req, res) {
+  const roles = await prisma.Role.findMany();
+  return res.json({ roles });
+}
+
+export async function getRolesWithoutUser(req, res) {
+  const roles = await prisma.Role.findMany({
+    where: {
+      NOT: {
+        name: "USER",
+      },
     },
-    include:{
-      roles: true
-    }
   });
   return res.json({ roles });
 }
 
 export async function getUserRoles(req, res) {
   const { id } = req.params;
-  const userRoles = await prisma.UsersRol.findMany({
+  const userRoles = await prisma.UsersRole.findMany({
     where: {
       userId: Number(id),
     },
     include: {
-      rol: true,
+      role: true,
       user: {
         select: {
           name: true,
@@ -29,16 +33,16 @@ export async function getUserRoles(req, res) {
       },
     },
   });
-  
+
   // Es para agrupar los roles dentro de un mismo objeto de user
-  const groupedUserRoles = userRoles.reduce((acc, { user, rol }) => {
+  const groupedUserRoles = userRoles.reduce((acc, { user, role }) => {
     if (!acc[user.name]) {
       acc[user.name] = {
         user: { name: user.name },
         roles: [],
       };
     }
-    acc[user.name].roles.push({ name: rol.name });
+    acc[user.name].roles.push({ name: role.name });
     return acc;
   }, {});
 
@@ -47,7 +51,7 @@ export async function getUserRoles(req, res) {
 
 export async function createRoles(req, res) {
   try {
-    const newRoles = await prisma.Rol.createMany({
+    const newRoles = await prisma.Role.createMany({
       data: [{ name: "MATERIALS" }, { name: "ADMINTOOL" }],
     });
 
@@ -61,12 +65,14 @@ export async function createRoles(req, res) {
 }
 
 export async function addRoleToUser(req, res) {
-  const { userId, rolId } = req.body;
+  const { userId, roleId } = req.body;
+  const { roles } = req;
   try {
-    const addRole = await prisma.UsersRol.createMany({
+    if (!roles.includes("ADMINLEAD")) return res.sendStatus(401);
+    const addRole = await prisma.UsersRole.createMany({
       data: {
         userId: Number(userId),
-        rolId: Number(rolId),
+        roleId: Number(roleId),
       },
     });
 

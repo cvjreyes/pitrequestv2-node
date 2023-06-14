@@ -14,34 +14,36 @@ model User {
   id               Int                @id @default(autoincrement())
   name             String
   email            String             @unique
-  token            String             @unique @db.VarChar(250)
+  token            String             @unique @db.VarChar(500)
   created_at       DateTime           @default(now())
   updated_at       DateTime           @default(now()) @updatedAt
-  UsersRol         UsersRol[]
+  UsersRole        UsersRole[]
   ProjectSoftwares ProjectSoftwares[]
   Project          Project[]
   ProjectUsers     ProjectUsers[]
 }
 
-model Rol {
-  id       Int        @id @default(autoincrement())
-  name     RolName    @unique @default(USER)
-  UsersRol UsersRol[]
+model Role {
+  id        Int         @id @default(autoincrement())
+  name      RoleName    @unique @default(USER)
+  UsersRole UsersRole[]
 }
 
-enum RolName {
-  MATERIALS
+enum RoleName {
+  USERLEAD
   ADMINTOOL
   ADMINLEAD
   USER
 }
 
-model UsersRol {
+model UsersRole {
   id     Int  @id @default(autoincrement())
   userId Int
-  rolId  Int
+  roleId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rol    Rol  @relation(fields: [rolId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
 }
 
 model Software {
@@ -72,8 +74,8 @@ model Project {
   name             String
   code             String
   estimatedHours   Float
-  userProjectId    Int
-  userProject      User               @relation(fields: [userProjectId], references: [id], onDelete: Cascade)
+  userProjectId    Int?
+  userProject      User?              @relation(fields: [userProjectId], references: [id], onDelete: SetNull)
   Charter          Charter[]
   ProjectSoftwares ProjectSoftwares[]
   ProjectUsers     ProjectUsers[]
@@ -89,11 +91,11 @@ model Charter {
 model ProjectSoftwares {
   id         Int      @id @default(autoincrement())
   projectId  Int
-  adminId    Int
+  adminId    Int?
   softwareId Int
   software   Software @relation(fields: [softwareId], references: [id], onDelete: Cascade)
   project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user       User     @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [adminId], references: [id], onDelete: SetNull)
 
   @@unique([projectId, adminId, softwareId])
 }
@@ -102,7 +104,7 @@ model ProjectUsers {
   id        Int     @id @default(autoincrement())
   userId    Int
   projectId Int
-  User      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  User      User    @relation(fields: [userId], references: [id])
   Project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@unique([projectId, userId])

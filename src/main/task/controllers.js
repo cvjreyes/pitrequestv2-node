@@ -1,26 +1,51 @@
 import { PrismaClient } from "@prisma/client";
+import hasRoles from "../../helpers/auth.js";
 
 const prisma = new PrismaClient();
 
 export async function getOneTask(req, res) {
-  const { id } = req.params;
+  const { roles } = req;
 
-  let tId = 0;
+  try {
+    if (!hasRoles(roles, ["ADMINTOOL", "ADMINLEAD"]))
+      return res.sendStatus(401);
+    const { id } = req.params;
 
-  if (id && !isNaN(Number(id))) {
-    tId = Number(id);
+    let tId = 0;
+
+    if (id && !isNaN(Number(id))) {
+      tId = Number(id);
+    }
+
+    const getTask = await prisma.Task.findUnique({
+      where: { id: tId },
+    });
+
+    res.json(getTask);
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while getting the Task" });
   }
-
-  const getTask = await prisma.Task.findUnique({
-    where: { id: tId },
-  });
-
-  res.json(getTask);
 }
 
 export async function createTask(req, res) {
   const { name, softwareId } = req.body;
+  const { roles } = req;
+
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+    
+    // Verificar si la software existe
+    const existingSoftware = await prisma.Software.findUnique({
+      where: { id: Number(softwareId) },
+    });
+
+    if (!existingSoftware) {
+      return res.status(400).json({ error: "Software has been deleted" });
+    }
+
     const newTask = await prisma.Task.create({
       data: {
         name,
@@ -39,7 +64,20 @@ export async function createTask(req, res) {
 export async function updateTask(req, res) {
   const { id } = req.params;
   const { name } = req.body;
+  const { roles } = req;
+
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+    
+    // Verificar si la software existe
+    const existingTask = await prisma.Task.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingTask) {
+      return res.status(400).json({ error: "Task has been deleted" });
+    }
+
     const newTask = await prisma.Task.update({
       data: {
         name,
@@ -57,7 +95,20 @@ export async function updateTask(req, res) {
 
 export async function deleteTask(req, res) {
   const { id } = req.params;
+  const { roles } = req;
+
   try {
+    if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+
+    // Verificar si la task existe
+    const existingTask = await prisma.Task.findUnique({
+      where: { id: Number(id) },
+    });
+
+    if (!existingTask) {
+      return res.status(400).json({ error: "Task already deleted" });
+    }
+
     const deleteTask = await prisma.Task.delete({
       where: { id: Number(id) },
     });
