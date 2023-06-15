@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+
 import hasRoles from "../../helpers/auth.js";
 import { generateToken, saveTokenIntoDB } from "../../helpers/token.js";
 

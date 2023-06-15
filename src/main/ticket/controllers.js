@@ -30,15 +30,10 @@ export async function getTickets(req, res) {
 }
 
 export async function createTicket(req, res) {
-  const {
-    code,
-    raisedBy,
-    projectId,
-    adminId,
-    softwareId,
-    subject,
-    description,
-  } = req.body;
+  const { raisedBy, projectId, adminId, softwareId, subject, description } =
+    req.body;
+
+  const urlFiles = req.files.map((file) => ({ url: file.filename }));
 
   try {
     // Verificar si el project existe
@@ -94,9 +89,14 @@ export async function createTicket(req, res) {
       },
     });
 
-    const newTicket = await prisma.Ticket.create({
+    const allTickets = await prisma.Ticket.findMany();
+    const lenghtTickets = allTickets.length;
+    const ticketId = String(lenghtTickets + 1).padStart(6, "0");
+    const ticketCode = `TIC${ticketId}`;
+
+    const newTicket = await prisma.ticket.create({
       data: {
-        code,
+        code: ticketCode,
         raisedBy: Number(raisedBy),
         projectId: Number(projectId),
         softwareId: Number(softwareId),
@@ -104,6 +104,11 @@ export async function createTicket(req, res) {
         subject,
         description,
         statusId: pendingStatus.id,
+        TicketsAttachment: {
+          createMany: {
+            data: urlFiles,
+          },
+        },
       },
     });
 
