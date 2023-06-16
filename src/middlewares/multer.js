@@ -17,7 +17,11 @@ const multerUpload = multer({
   }),
   fileFilter: (req, file, cb) => {
     if (MIMETYPES.includes(file.mimetype)) cb(null, true);
-    else cb(new Error(`Only ${MIMETYPES.join(" ")} mimetypes are allowed`));
+    else {
+      let err = new Error(`Only ${MIMETYPES.join(" ")} mimetypes are allowed`);
+      err.statusCode = 400;
+      return cb(err);
+    }
   },
   limits: { fieldSize: 10000000 },
 });
