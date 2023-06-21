@@ -21,6 +21,8 @@ export async function getOneSoftware(req, res) {
     where: { id: sId },
   });
 
+  if (!getSoftware) return res.sendStatus(404)
+
   res.json(getSoftware);
 }
 
@@ -61,7 +63,7 @@ export async function getSelectedSoftware(req, res) {
     where: { projectId: pId },
     select: { softwareId: true },
   });
-
+ 
   // Obtener todos los softwares que no están seleccionados en el proyecto
   const unselectedSoftwares = await prisma.Software.findMany({
     where: { id: { in: selectedSoftwareIds.map((item) => item.softwareId) } },

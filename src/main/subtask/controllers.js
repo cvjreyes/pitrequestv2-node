@@ -21,6 +21,8 @@ export async function getOneSubTask(req, res) {
       where: { id: stId },
     });
 
+    if (!getSubTask) return res.sendStatus(404);
+
     res.json(getSubTask);
   } catch (err) {
     console.log(err);
@@ -68,7 +70,7 @@ export async function updateSubTask(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
-    
+
     // Verificar si la subtask existe
     const existingSubtask = await prisma.Subtask.findUnique({
       where: { id: Number(id) },
@@ -99,7 +101,7 @@ export async function deleteSubtask(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
-    
+
     // Verificar si la task existe
     const existingSubtask = await prisma.Subtask.findUnique({
       where: { id: Number(id) },

@@ -21,6 +21,8 @@ export async function getOneTask(req, res) {
       where: { id: tId },
     });
 
+    if (!getTask) return res.sendStatus(404)
+
     res.json(getTask);
   } catch (err) {
     console.log(err);
