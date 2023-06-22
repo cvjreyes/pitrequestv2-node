@@ -21,6 +21,8 @@ export async function getOneCharter(req, res) {
       where: { id: cId },
     });
 
+    if (!getCharter) return res.sendStatus(404)
+
     res.json(getCharter);
   } catch (err) {
     console.log(err);
@@ -33,6 +35,8 @@ export async function getOneCharter(req, res) {
 export async function createCharter(req, res) {
   const { name, projectId } = req.body;
   const { roles } = req;
+
+  if(!name || !projectId) return res.sendStatus(404)
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);

@@ -135,6 +135,8 @@ export async function getOneProject(req, res) {
       where: { id: pId },
     });
 
+    if (!getProject) return res.sendStatus(404)
+
     res.json(getProject);
   } catch (err) {
     console.log(err);
@@ -158,9 +160,10 @@ export async function createProject(req, res) {
         userProjectId,
       },
     });
-
+    
     const projectId = newProject.id;
-
+    console.log(projectId);
+    
     await prisma.ProjectUsers.create({
       data: {
         userId: userProjectId,
