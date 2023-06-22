@@ -1,4 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+import fs from 'fs';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -17,6 +19,7 @@ export async function getTickets(req, res) {
         User: { select: { name: true } },
         Admin: { select: { name: true } },
         Status: { select: { name: true } },
+        TicketsAttachment: { select: { id: true, url: true } },
       },
     });
 
@@ -118,5 +121,27 @@ export async function createTicket(req, res) {
     return res.status(500).json({
       error: "An error occurred while creating a new ticket",
     });
+  }
+}
+
+export function downloadAttachment(req, res) {
+  const { attachmentId } = req.params;
+
+  // Obtener la ruta del archivo adjunto
+  const filePath = path.join(__dirname, 'uploads', attachmentId);
+
+  // Verificar si el archivo existe
+  if (fs.existsSync(filePath)) {
+    // Establecer las cabeceras de respuesta para la descarga
+    res.setHeader('Content-Disposition', `attachment; filename=${attachmentId}`);
+    res.setHeader('Content-Type', 'application/octet-stream');
+
+    // Crear un flujo de lectura para el archivo
+    const fileStream = fs.createReadStream(filePath);
+
+    // Transmitir el archivo al cliente
+    fileStream.pipe(res);
+  } else {
+    res.status(404).json({ error: 'File not found' });
   }
 }
