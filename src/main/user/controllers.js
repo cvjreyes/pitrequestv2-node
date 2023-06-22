@@ -52,7 +52,7 @@ export async function getUnassignedAdmins(req, res) {
       },
     });
 
-    return res.json({ admins });
+    return res.json(admins);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });
@@ -268,6 +268,7 @@ export async function actionsAdmin(req, res) {
   const { softwareId, projectId, adminId } = req.params;
   const { newAdminId } = req.body;
   const { roles } = req;
+
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
 
