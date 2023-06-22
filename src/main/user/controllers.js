@@ -125,7 +125,7 @@ export async function getAdmins(req, res) {
       },
     });
 
-    return res.json({ Admins });
+    return res.json(Admins);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: "Internal server error" });

@@ -184,6 +184,7 @@ export async function addSoftwareAndAdminToProject(req, res) {
   const { projectId, adminId, softwareId } = req.body;
   const { roles } = req;
 
+  console.log(projectId, adminId, softwareId);
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
 
