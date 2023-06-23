@@ -30,6 +30,7 @@ app.use(cors());
 // RECOGER INFORMACION BODY
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static("uploads"));
 
 // RUTAS
 app.use("/auth", authRouter);
