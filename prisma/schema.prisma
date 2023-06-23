@@ -86,10 +86,11 @@ model Project {
 }
 
 model Charter {
-  id        Int     @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
   projectId Int
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  Ticket    Ticket[]
 
   @@unique([name, projectId])
 }
@@ -121,6 +122,7 @@ model Ticket {
   code              String              @unique
   raisedBy          Int
   projectId         Int
+  charterId         Int?
   softwareId        Int
   adminId           Int
   subject           String
@@ -128,9 +130,9 @@ model Ticket {
   statusId          Int
   created_at        DateTime            @default(now())
   updated_at        DateTime            @default(now()) @updatedAt
-  closed_at         DateTime            @default(now()) @updatedAt
   User              User                @relation("RaisedByUser", fields: [raisedBy], references: [id])
   Project           Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  Charter           Charter?            @relation(fields: [charterId], references: [id], onDelete: SetNull)
   Software          Software            @relation(fields: [softwareId], references: [id], onDelete: Cascade)
   Admin             User                @relation("AdminUser", fields: [adminId], references: [id])
   Status            Status              @relation(fields: [statusId], references: [id], onDelete: Cascade)

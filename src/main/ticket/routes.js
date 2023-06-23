@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.get("/", getTickets);
 
-router.post("/", multerUpload.array("tickets") ,createTicket);
+router.post("/", multerUpload.array("tickets"), createTicket);
 
 export default router;

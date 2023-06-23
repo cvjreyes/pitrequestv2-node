@@ -33,7 +33,7 @@ export async function getTickets(req, res) {
 }
 
 export async function createTicket(req, res) {
-  const { raisedBy, projectId, adminId, softwareId, subject, description } =
+  const { raisedBy, projectId, charterId, adminId, softwareId, subject, description } =
     req.body;
 
   const urlFiles = req.files.map((file) => ({ url: file.filename }));
@@ -42,6 +42,11 @@ export async function createTicket(req, res) {
     // Verificar si el project existe
     const existingProject = await prisma.Project.findUnique({
       where: { id: Number(projectId) },
+    });
+
+    // Verificar si el charter existe
+    const existingCharter = await prisma.Charter.findUnique({
+      where: { id: Number(charterId) },
     });
 
     // Verificar si el software existe
@@ -83,7 +88,9 @@ export async function createTicket(req, res) {
       return res
         .status(400)
         .json({ error: "Admin and Software are not from same Project" });
-    }
+    } else if (!existingCharter) {
+      return res.status(400).json({ error: "Charter has been deleted" });
+    } 
 
     // Obtener la ID del estado "PENDING" desde la tabla Status
     const pendingStatus = await prisma.Status.findFirst({
@@ -102,6 +109,7 @@ export async function createTicket(req, res) {
         code: ticketCode,
         raisedBy: Number(raisedBy),
         projectId: Number(projectId),
+        charterId: Number(charterId),
         softwareId: Number(softwareId),
         adminId: Number(adminId),
         subject,

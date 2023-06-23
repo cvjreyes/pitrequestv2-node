@@ -32,6 +32,35 @@ export async function getOneCharter(req, res) {
   }
 }
 
+export async function getChartersFromProject(req, res) {
+  const { roles } = req;
+
+  try {
+    if (!hasRoles(roles, ["ADMINTOOL", "ADMINLEAD"]))
+      return res.sendStatus(401);
+    const { projectId } = req.params;
+
+    let pId = 0;
+
+    if (projectId && !isNaN(Number(projectId))) {
+      pId = Number(projectId);
+    }
+
+    const getChartersFromProject = await prisma.Charter.findMany({
+      where: { projectId: pId },
+    });
+
+    if (!getChartersFromProject) return res.sendStatus(404);
+
+    res.json(getChartersFromProject);
+  } catch (err) {
+    console.log(err);
+    return res
+      .status(500)
+      .json({ error: "An error occurred while getting one Charter" });
+  }
+}
+
 export async function createCharter(req, res) {
   const { name, projectId } = req.body;
   const { roles } = req;
