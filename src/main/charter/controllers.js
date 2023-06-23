@@ -21,7 +21,7 @@ export async function getOneCharter(req, res) {
       where: { id: cId },
     });
 
-    if (!getCharter) return res.sendStatus(404)
+    if (!getCharter) return res.sendStatus(404);
 
     res.json(getCharter);
   } catch (err) {
@@ -36,11 +36,11 @@ export async function createCharter(req, res) {
   const { name, projectId } = req.body;
   const { roles } = req;
 
-  if(!name || !projectId) return res.sendStatus(404)
+  if (!name || !projectId) return res.sendStatus(404);
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
-    
+
     // Verificar si el project existe
     const existingProject = await prisma.Project.findUnique({
       where: { id: Number(projectId) },
@@ -48,6 +48,14 @@ export async function createCharter(req, res) {
 
     if (!existingProject) {
       return res.status(400).json({ error: "Project has been deleted" });
+    }
+
+    const charterAlreadyExists = await prisma.Charter.findUnique({
+      where: { name_projectId: { name, projectId: Number(projectId) } },
+    });
+
+    if (charterAlreadyExists) {
+      return res.status(400).json({ error: "Charter already exist in this Project" });
     }
 
     const newCharter = await prisma.Charter.create({
@@ -73,7 +81,7 @@ export async function updateCharter(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
-    
+
     // Verificar si el charter existe
     const existingCharter = await prisma.Charter.findUnique({
       where: { id: Number(id) },
@@ -105,7 +113,7 @@ export async function deleteCharter(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
-    
+
     // Verificar si el charter existe
     const existingCharter = await prisma.Charter.findUnique({
       where: { id: Number(id) },

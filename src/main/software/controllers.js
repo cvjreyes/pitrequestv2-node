@@ -21,7 +21,7 @@ export async function getOneSoftware(req, res) {
     where: { id: sId },
   });
 
-  if (!getSoftware) return res.sendStatus(404)
+  if (!getSoftware) return res.sendStatus(404);
 
   res.json(getSoftware);
 }
@@ -63,7 +63,7 @@ export async function getSelectedSoftware(req, res) {
     where: { projectId: pId },
     select: { softwareId: true },
   });
- 
+
   // Obtener todos los softwares que no están seleccionados en el proyecto
   const unselectedSoftwares = await prisma.Software.findMany({
     where: { id: { in: selectedSoftwareIds.map((item) => item.softwareId) } },
@@ -99,6 +99,22 @@ export async function createSoftware(req, res) {
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
 
+    const findName = await prisma.Software.findUnique({
+      where: {
+        name,
+      },
+    });
+    const findCode = await prisma.Software.findUnique({
+      where: {
+        code,
+      },
+    });
+
+    if (findName || findCode)
+      return res
+        .status(400)
+        .json({ error: "The name or code of the Software already exist" });
+
     const newSoftware = await prisma.Software.create({
       data: {
         name,
@@ -131,6 +147,22 @@ export async function updateSoftware(req, res) {
       return res.status(400).json({ error: "Software has been deleted" });
     }
 
+    const findName = await prisma.Software.findUnique({
+      where: {
+        name,
+      },
+    });
+    const findCode = await prisma.Software.findUnique({
+      where: {
+        code,
+      },
+    });
+
+    if (findName || findCode)
+      return res
+        .status(400)
+        .json({ error: "The name or code of the Software already exist" });
+        
     const newSoftware = await prisma.Software.update({
       data: {
         name,

@@ -36,7 +36,6 @@ export async function createTicket(req, res) {
   const { raisedBy, projectId, adminId, softwareId, subject, description } =
     req.body;
 
-    console.log(process.env.NODE_CLIENT_URL);
   const urlFiles = req.files.map((file) => ({ url: file.filename }));
 
   try {

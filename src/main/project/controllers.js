@@ -135,7 +135,7 @@ export async function getOneProject(req, res) {
       where: { id: pId },
     });
 
-    if (!getProject) return res.sendStatus(404)
+    if (!getProject) return res.sendStatus(404);
 
     res.json(getProject);
   } catch (err) {
@@ -152,6 +152,23 @@ export async function createProject(req, res) {
 
   try {
     if (!hasRoles(roles, ["ADMINLEAD"])) return res.sendStatus(401);
+
+    const findName = await prisma.Project.findUnique({
+      where: {
+        name,
+      },
+    });
+    const findCode = await prisma.Project.findUnique({
+      where: {
+        code,
+      },
+    });
+
+    if (findName || findCode)
+      return res
+        .status(400)
+        .json({ error: "The name or code of the Project already exist" });
+
     const newProject = await prisma.Project.create({
       data: {
         name,
@@ -160,10 +177,9 @@ export async function createProject(req, res) {
         userProjectId,
       },
     });
-    
+
     const projectId = newProject.id;
-    console.log(projectId);
-    
+
     await prisma.ProjectUsers.create({
       data: {
         userId: userProjectId,
@@ -306,6 +322,22 @@ export async function updateProject(req, res) {
       return res.status(400).json({ error: "No valid fields to update" });
     }
 
+    const findName = await prisma.Project.findUnique({
+      where: {
+        name,
+      },
+    });
+    const findCode = await prisma.Project.findUnique({
+      where: {
+        code,
+      },
+    });
+
+    if (findName || findCode)
+      return res
+        .status(400)
+        .json({ error: "The name or code of the Project already exist" });
+        
     const newProject = await prisma.Project.update({
       data: updateData,
       where: { id: Number(id) },

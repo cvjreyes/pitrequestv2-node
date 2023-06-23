@@ -50,8 +50,8 @@ model UsersRole {
 
 model Software {
   id               Int                @id @default(autoincrement())
-  name             String
-  code             String
+  name             String             @unique
+  code             String             @unique
   Task             Task[]
   ProjectSoftwares ProjectSoftwares[]
   Ticket           Ticket[]
@@ -74,8 +74,8 @@ model Subtask {
 
 model Project {
   id               Int                @id @default(autoincrement())
-  name             String
-  code             String
+  name             String             @unique
+  code             String             @unique
   estimatedHours   Float
   userProjectId    Int?
   userProject      User?              @relation(fields: [userProjectId], references: [id], onDelete: SetNull)
@@ -90,6 +90,8 @@ model Charter {
   name      String
   projectId Int
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([name, projectId])
 }
 
 model ProjectSoftwares {
