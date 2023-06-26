@@ -24,7 +24,6 @@ export async function getTickets(req, res) {
       },
     });
 
-    console.log(tickets);
     res.json(tickets);
   } catch (err) {
     console.log(err);
