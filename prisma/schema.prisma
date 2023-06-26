@@ -1,0 +1,161 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               Int                @id @default(autoincrement())
+  name             String
+  email            String             @unique
+  token            String             @unique @db.VarChar(500)
+  created_at       DateTime           @default(now())
+  updated_at       DateTime           @default(now()) @updatedAt
+  UsersRole        UsersRole[]
+  ProjectSoftwares ProjectSoftwares[]
+  Project          Project[]
+  ProjectUsers     ProjectUsers[]
+  TicketRaisedBy   Ticket[]           @relation("RaisedByUser")
+  TicketAdmin      Ticket[]           @relation("AdminUser")
+}
+
+model Role {
+  id        Int         @id @default(autoincrement())
+  name      RoleName    @unique @default(USER)
+  UsersRole UsersRole[]
+}
+
+enum RoleName {
+  USER
+  USERLEAD
+  ADMINTOOL
+  ADMINLEAD
+}
+
+model UsersRole {
+  id     Int  @id @default(autoincrement())
+  userId Int
+  roleId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+}
+
+model Software {
+  id               Int                @id @default(autoincrement())
+  name             String             @unique
+  code             String             @unique
+  Task             Task[]
+  ProjectSoftwares ProjectSoftwares[]
+  Ticket           Ticket[]
+}
+
+model Task {
+  id         Int       @id @default(autoincrement())
+  name       String
+  softwareId Int
+  software   Software  @relation(fields: [softwareId], references: [id], onDelete: Cascade)
+  Subtask    Subtask[]
+}
+
+model Subtask {
+  id     Int    @id @default(autoincrement())
+  name   String
+  taskId Int
+  task   Task   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id               Int                @id @default(autoincrement())
+  name             String             @unique
+  code             String             @unique
+  estimatedHours   Float
+  userProjectId    Int?
+  userProject      User?              @relation(fields: [userProjectId], references: [id], onDelete: SetNull)
+  Charter          Charter[]
+  ProjectSoftwares ProjectSoftwares[]
+  ProjectUsers     ProjectUsers[]
+  Ticket           Ticket[]
+}
+
+model Charter {
+  id        Int      @id @default(autoincrement())
+  name      String
+  projectId Int
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  Ticket    Ticket[]
+
+  @@unique([name, projectId])
+}
+
+model ProjectSoftwares {
+  id         Int      @id @default(autoincrement())
+  projectId  Int
+  adminId    Int?
+  softwareId Int
+  software   Software @relation(fields: [softwareId], references: [id], onDelete: Cascade)
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user       User?    @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, adminId, softwareId])
+}
+
+model ProjectUsers {
+  id        Int     @id @default(autoincrement())
+  userId    Int
+  projectId Int
+  User      User    @relation(fields: [userId], references: [id])
+  Project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+}
+
+model Ticket {
+  id                Int                 @id @default(autoincrement())
+  code              String              @unique
+  raisedBy          Int
+  projectId         Int
+  charterId         Int?
+  softwareId        Int
+  adminId           Int
+  subject           String
+  description       String
+  statusId          Int
+  created_at        DateTime            @default(now())
+  updated_at        DateTime            @default(now()) @updatedAt
+  User              User                @relation("RaisedByUser", fields: [raisedBy], references: [id])
+  Project           Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  Charter           Charter?            @relation(fields: [charterId], references: [id], onDelete: SetNull)
+  Software          Software            @relation(fields: [softwareId], references: [id], onDelete: Cascade)
+  Admin             User                @relation("AdminUser", fields: [adminId], references: [id])
+  Status            Status              @relation(fields: [statusId], references: [id], onDelete: Cascade)
+  TicketsAttachment TicketsAttachment[]
+}
+
+model TicketsAttachment {
+  id       Int    @id @default(autoincrement())
+  ticketId Int
+  url      String
+  Ticket   Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+}
+
+model Status {
+  id     Int        @id @default(autoincrement())
+  name   StatusName @unique @default(PENDING)
+  Ticket Ticket[]
+}
+
+enum StatusName {
+  PENDING
+  IN_PROGRESS
+  REASSIGNED
+  READY
+  REJECTED
+}

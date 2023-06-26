@@ -1,11 +1,25 @@
-import express from "express";
 import cors from "cors";
+import express from "express";
 
 import authRouter from "./src/main/auth/routes.js";
+
 import roleRouter from "./src/main/role/routes.js";
 import userRouter from "./src/main/user/routes.js";
-import softwareRouter from "./src/main/software/routes.js";
+
+import charterRouter from "./src/main/charter/routes.js";
 import projectRouter from "./src/main/project/routes.js";
+
+import softwareRouter from "./src/main/software/routes.js";
+import subtaskRouter from "./src/main/subtask/routes.js";
+import taskRouter from "./src/main/task/routes.js";
+
+import ticketRouter from "./src/main/ticket/routes.js";
+
+import { checkAuth } from "./src/middlewares/auth.js";
+
+import * as dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 
@@ -16,15 +30,22 @@ app.use(cors());
 // RECOGER INFORMACION BODY
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use("/uploads", express.static("uploads"));
 
 // RUTAS
 app.use("/auth", authRouter);
 
-app.use("/user", userRouter);
+app.use("/users", checkAuth, userRouter);
+app.use("/roles", checkAuth, roleRouter);
 
-app.use("/role", roleRouter);
-app.use("/software", softwareRouter);
-app.use("/project", projectRouter);
+app.use("/projects", checkAuth, projectRouter);
+app.use("/charters", checkAuth, charterRouter);
+
+app.use("/softwares", checkAuth, softwareRouter);
+app.use("/tasks", checkAuth, taskRouter);
+app.use("/subtasks", checkAuth, subtaskRouter);
+
+app.use("/tickets", checkAuth, ticketRouter);
 
 // 404 HANDLING
 app.use("*", (req, res) => {

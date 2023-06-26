@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon",
+    "seed": "node ./prisma/seed.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,13 +17,16 @@
     "prisma": "^4.13.0"
   },
   "dependencies": {
-    "@prisma/client": "^4.13.0",
+    "@prisma/client": "^4.16.1",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "email-validator": "^2.0.4",
     "express": "^4.18.2",
     "jsonwebtoken": "^9.0.0",
+    "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.1",
-    "nodemailer-express-handlebars": "^6.1.0"
+    "nodemailer-express-handlebars": "^6.1.0",
+    "path": "^0.12.7",
+    "url": "^0.11.1"
   }
 }
