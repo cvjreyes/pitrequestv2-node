@@ -147,22 +147,51 @@ export async function updateSoftware(req, res) {
       return res.status(400).json({ error: "Software has been deleted" });
     }
 
-    const findName = await prisma.Software.findUnique({
-      where: {
-        name,
-      },
-    });
-    const findCode = await prisma.Software.findUnique({
-      where: {
-        code,
-      },
-    });
-
-    if (findName || findCode)
+    if (!name && !code)
       return res
         .status(400)
-        .json({ error: "The name or code of the Software already exist" });
-        
+        .json({ error: "The Name and Code of the Software not changed" });
+
+    if (name && !code) {
+      const findName = await prisma.Software.findUnique({
+        where: {
+          name,
+        },
+      });
+      if (findName)
+        return res
+          .status(400)
+          .json({ error: "The Name of the Software already exist" });
+
+      const newSoftware = await prisma.Software.update({
+        data: {
+          name,
+        },
+        where: { id: Number(id) },
+      });
+
+      return res.json({ newSoftware });
+    }
+
+    if (code && !name) {
+      const findCode = await prisma.Software.findUnique({
+        where: {
+          code,
+        },
+      });
+      if (findCode)
+        return res
+          .status(400)
+          .json({ error: "The Code of the Software already exist" });
+      const newSoftware = await prisma.Software.update({
+        data: {
+          code,
+        },
+        where: { id: Number(id) },
+      });
+      return res.json({ newSoftware });
+    }
+
     const newSoftware = await prisma.Software.update({
       data: {
         name,

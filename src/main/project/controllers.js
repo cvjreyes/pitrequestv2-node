@@ -302,44 +302,55 @@ export async function updateProject(req, res) {
       return res.status(400).json({ error: "Project has been deleted" });
     }
 
-    // Crear un objeto con los campos a actualizar
-    const updateData = {};
+    if (!name && !code) {
+      const newProject = await prisma.Project.update({
+        data: { estimatedHours },
+        where: { id: Number(id) },
+      });
 
-    if (name !== undefined) {
-      updateData.name = name;
+      return res.json({ newProject });
     }
 
-    if (code !== undefined) {
-      updateData.code = code;
+    if (name && !code) {
+      const findName = await prisma.Project.findUnique({
+        where: {
+          name,
+        },
+      });
+      if (findName)
+        return res
+          .status(400)
+          .json({ error: "The Name of the Project already exist" });
+
+      const newProject = await prisma.Project.update({
+        data: { name, estimatedHours },
+        where: { id: Number(id) },
+      });
+
+      return res.json({ newProject });
     }
 
-    if (estimatedHours !== undefined) {
-      updateData.estimatedHours = parseFloat(estimatedHours);
+    if (!name && code) {
+      const findCode = await prisma.Project.findUnique({
+        where: {
+          code,
+        },
+      });
+      if (findCode)
+        return res
+          .status(400)
+          .json({ error: "The Code of the Project already exist" });
+
+      const newProject = await prisma.Project.update({
+        data: { code, estimatedHours },
+        where: { id: Number(id) },
+      });
+
+      return res.json({ newProject });
     }
 
-    // Verificar si hay campos a actualizar
-    if (Object.keys(updateData).length === 0) {
-      return res.status(400).json({ error: "No valid fields to update" });
-    }
-
-    const findName = await prisma.Project.findUnique({
-      where: {
-        name,
-      },
-    });
-    const findCode = await prisma.Project.findUnique({
-      where: {
-        code,
-      },
-    });
-
-    if (findName || findCode)
-      return res
-        .status(400)
-        .json({ error: "The name or code of the Project already exist" });
-        
     const newProject = await prisma.Project.update({
-      data: updateData,
+      data: { name, code, estimatedHours },
       where: { id: Number(id) },
     });
 
