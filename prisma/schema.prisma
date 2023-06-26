@@ -32,10 +32,10 @@ model Role {
 }
 
 enum RoleName {
+  USER
   USERLEAD
   ADMINTOOL
   ADMINLEAD
-  USER
 }
 
 model UsersRole {

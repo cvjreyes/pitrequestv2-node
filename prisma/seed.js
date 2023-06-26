@@ -1,4 +1,4 @@
-import { PrismaClient, RoleName } from "@prisma/client";
+import { PrismaClient, RoleName, StatusName } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -16,7 +16,10 @@ async function seed() {
   await prisma.project.deleteMany();
   await prisma.usersRole.deleteMany();
   await prisma.role.deleteMany();
+  await prisma.status.deleteMany();
   await prisma.user.deleteMany();
+  await prisma.ticket.deleteMany();
+  await prisma.ticketsAttachment.deleteMany();
   console.timeEnd("🧹 Cleaned up the database...");
 
   console.time("🌱 Created roles...");
@@ -24,19 +27,10 @@ async function seed() {
   await prisma.role.createMany({ data: roles });
   console.timeEnd("🌱 Created roles...");
 
-  console.time("🌱 Created user and token...");
-  const user = await prisma.user.create({
-    data: {
-      name: "Sean Saez Fuller",
-      email: "sean.saez-fuller@technipenergies.com",
-      token:
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9!eyJlbWFpbCI6InNlYW4uc2Flei1mdWxsZXJAdGVjaG5pcGVuZXJnaWVzLmNvbSIsInJvbGVzIjpbIk1BVEVSSUFMUyIsIkFETUlOVE9PTCJdLCJpYXQiOjE2ODQ0OTQyNzMsImV4cCI6MTY4NTA5OTA3M30!xUJgLd9M9pS2mT83u9TNbEurHcsCgYKO8MxbuwsaDUE", // Replace with your preferred token generation logic
-      UsersRole: {
-        connect: {},
-      },
-    },
-  });
-  console.timeEnd("🌱 Created user and token...");
+  console.time("🌱 Created status...");
+  const status = Object.keys(StatusName);
+  await prisma.status.createMany({ data: status });
+  console.timeEnd("🌱 Created status...");
 
   console.timeEnd(`🌱 Database has been seeded`);
 }
